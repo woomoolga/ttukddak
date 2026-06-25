@@ -17,6 +17,15 @@ interface BusinessInfo {
   employeeCount: string;
 }
 
+interface PlatformResult {
+  name: string;
+  status: "found" | "not_found" | "unknown";
+  count?: number;
+  url: string | null;
+  guideUrl: string;
+  guideLabel: string;
+}
+
 const industryOptions = [
   "음식점/카페",
   "소매/유통",
@@ -69,6 +78,211 @@ const dummyResults: { title: string; tips: string[] }[] = [
   },
 ];
 
+function generateTips(platforms: PlatformResult[]): string[] {
+  const tips: string[] = [];
+  for (const p of platforms) {
+    if (p.status === "found" && p.count !== undefined && p.count < 10) {
+      if (p.name === "네이버 쇼핑") {
+        tips.push(
+          `네이버 쇼핑에 상품 ${p.count}개는 노출에 불리합니다. 최소 10개 이상 등록하세요.`
+        );
+      } else if (p.name === "옥션" || p.name === "지마켓") {
+        tips.push(
+          `${p.name}에 상품 ${p.count}개는 노출에 불리합니다. 최소 10개 이상 등록하세요.`
+        );
+      }
+    }
+    if (p.status === "not_found") {
+      if (p.name === "네이버 쇼핑") {
+        tips.push(
+          "네이버 스마트스토어 입점 시 검색 유입이 크게 늘어납니다."
+        );
+      } else if (p.name === "네이버 플레이스") {
+        tips.push(
+          "네이버 플레이스 등록은 무료이며, 지도 검색 노출에 필수입니다."
+        );
+      } else if (p.name === "옥션" || p.name === "지마켓") {
+        tips.push(
+          `${p.name} 입점으로 추가 판매 채널을 확보하세요.`
+        );
+      }
+    }
+  }
+  // 항상 추가하는 일반 팁
+  tips.push(
+    "인스타그램 비즈니스 계정으로 전환하면 인사이트를 활용할 수 있습니다."
+  );
+  if (tips.length < 4) {
+    tips.push(
+      "네이버 블로그를 운영하면 검색 유입이 크게 늘어납니다."
+    );
+  }
+  return tips;
+}
+
+function PlatformSection({ platforms }: { platforms: PlatformResult[] }) {
+  const found = platforms.filter((p) => p.status === "found");
+  const notFound = platforms.filter((p) => p.status === "not_found");
+  const unknown = platforms.filter((p) => p.status === "unknown");
+  const tips = generateTips(platforms);
+
+  return (
+    <div className="space-y-6">
+      {/* 사용 중인 플랫폼 */}
+      {found.length > 0 && (
+        <div className="rounded-2xl border border-border bg-card p-6">
+          <h3 className="mb-4 text-base font-bold">사용 중인 플랫폼</h3>
+          <div className="space-y-3">
+            {found.map((p) => (
+              <div
+                key={p.name}
+                className="flex flex-col gap-2 rounded-xl bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex shrink-0 items-center rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-semibold text-green-600 dark:text-green-400">
+                    감지됨
+                  </span>
+                  <span className="text-sm font-medium">{p.name}</span>
+                  {p.count !== undefined && p.count > 0 && (
+                    <span className="text-xs text-muted">
+                      상품 {p.count}개
+                    </span>
+                  )}
+                </div>
+                <div className="flex gap-2 pl-[4.5rem] sm:pl-0">
+                  {p.url && (
+                    <a
+                      href={p.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-background"
+                    >
+                      검색 결과 보기
+                    </a>
+                  )}
+                  <a
+                    href={p.guideUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-lg bg-brand-blue/10 px-3 py-1.5 text-xs font-medium text-brand-blue transition-colors hover:bg-brand-blue/20"
+                  >
+                    {p.guideLabel}
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 미사용 플랫폼 */}
+      {notFound.length > 0 && (
+        <div className="rounded-2xl border border-border bg-card p-6">
+          <h3 className="mb-4 text-base font-bold">미사용 플랫폼</h3>
+          <div className="space-y-3">
+            {notFound.map((p) => (
+              <div
+                key={p.name}
+                className="flex flex-col gap-2 rounded-xl bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex shrink-0 items-center rounded-full bg-gray-500/10 px-2.5 py-0.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                    미등록
+                  </span>
+                  <span className="text-sm font-medium">{p.name}</span>
+                </div>
+                <div className="pl-[4.5rem] sm:pl-0">
+                  <a
+                    href={p.guideUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-lg bg-brand-orange/10 px-3 py-1.5 text-xs font-medium text-brand-orange transition-colors hover:bg-brand-orange/20"
+                  >
+                    {p.guideLabel}
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 직접 확인 */}
+      {unknown.length > 0 && (
+        <div className="rounded-2xl border border-border bg-card p-6">
+          <h3 className="mb-4 text-base font-bold">직접 확인</h3>
+          <div className="space-y-3">
+            {unknown.map((p) => (
+              <div
+                key={p.name}
+                className="flex flex-col gap-2 rounded-xl bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex shrink-0 items-center rounded-full bg-yellow-500/10 px-2.5 py-0.5 text-xs font-semibold text-yellow-600 dark:text-yellow-400">
+                    확인 필요
+                  </span>
+                  <span className="text-sm font-medium">{p.name}</span>
+                </div>
+                <div className="flex gap-2 pl-[4.5rem] sm:pl-0">
+                  {p.url && (
+                    <a
+                      href={p.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-background"
+                    >
+                      확인하기
+                    </a>
+                  )}
+                  <a
+                    href={p.guideUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-lg bg-brand-blue/10 px-3 py-1.5 text-xs font-medium text-brand-blue transition-colors hover:bg-brand-blue/20"
+                  >
+                    {p.guideLabel}
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 챙겨야 할 것들 */}
+      {tips.length > 0 && (
+        <div className="rounded-2xl border border-brand-orange/30 bg-card p-6">
+          <h3 className="mb-4 text-base font-bold">챙겨야 할 것들</h3>
+          <ul className="space-y-3">
+            {tips.map((tip, i) => (
+              <li key={i} className="flex gap-3 text-sm text-muted">
+                <span className="mt-0.5 shrink-0 text-xs font-bold text-brand-orange">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="leading-relaxed">{tip}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* 혼자 하기 어려우시면? */}
+      <div className="rounded-2xl border border-border bg-surface p-6 text-center sm:p-8">
+        <p className="text-base font-bold">혼자 하기 어려우시면?</p>
+        <p className="mt-1 text-sm text-muted">
+          뚝딱이 도와드립니다
+        </p>
+        <Link
+          href="/services"
+          className="mt-5 inline-block rounded-xl bg-brand-orange px-8 py-3.5 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
+        >
+          IT 서비스 견적 받기
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 function MarketingContent() {
   const searchParams = useSearchParams();
   const biz = searchParams.get("biz") || "";
@@ -81,6 +295,10 @@ function MarketingContent() {
   const [selectedIndustry, setSelectedIndustry] = useState("");
   const [showResult, setShowResult] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // 플랫폼 체크
+  const [platforms, setPlatforms] = useState<PlatformResult[]>([]);
+  const [platformLoading, setPlatformLoading] = useState(false);
 
   // 혜택 조회에서 넘어온 경우 자동으로 사업자 정보 가져오기
   useEffect(() => {
@@ -104,6 +322,24 @@ function MarketingContent() {
           setLoading(false);
           setShowResult(true);
         }, 1200);
+
+        // 플랫폼 체크 시작
+        if (data.businessName) {
+          setPlatformLoading(true);
+          fetch("/api/platform-check", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ businessName: data.businessName }),
+          })
+            .then((res) => res.json())
+            .then((result) => {
+              if (result.platforms) {
+                setPlatforms(result.platforms);
+              }
+            })
+            .catch(() => {})
+            .finally(() => setPlatformLoading(false));
+        }
       })
       .catch(() => {})
       .finally(() => setBizLoading(false));
@@ -295,6 +531,38 @@ function MarketingContent() {
             )}
           </div>
 
+          {/* 온라인 활동 현황 (biz 파라미터가 있을 때만) */}
+          {bizInfo && (
+            <div className="space-y-4">
+              <div className="text-center">
+                <h2 className="text-xl font-bold tracking-tight">
+                  온라인 활동 현황
+                </h2>
+                <p className="mt-1 text-sm text-muted">
+                  {displayName}의 주요 플랫폼 활동을 확인했습니다
+                </p>
+              </div>
+
+              {platformLoading ? (
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card py-12 space-y-4">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-blue border-t-transparent" />
+                  <p className="text-sm text-muted">
+                    온라인 플랫폼을 검색하고 있습니다...
+                  </p>
+                </div>
+              ) : platforms.length > 0 ? (
+                <PlatformSection platforms={platforms} />
+              ) : (
+                <div className="rounded-2xl border border-border bg-card p-6 text-center">
+                  <p className="text-sm text-muted">
+                    플랫폼 정보를 불러오지 못했습니다.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 기존 마케팅 전략 결과 */}
           <div className="grid gap-4 sm:grid-cols-2">
             {dummyResults.map((section) => (
               <div
@@ -316,21 +584,23 @@ function MarketingContent() {
             ))}
           </div>
 
-          {/* IT 서비스 CTA */}
-          <div className="mt-8 rounded-2xl border border-border bg-surface p-6 sm:p-8 text-center">
-            <p className="text-base font-bold">
-              마케팅 실행이 필요하신가요?
-            </p>
-            <p className="mt-1 text-sm text-muted">
-              홈페이지 제작, 로고 디자인, 광고 제작까지 뚝딱이 도와드립니다
-            </p>
-            <Link
-              href="/services"
-              className="mt-5 inline-block rounded-xl bg-brand-orange px-8 py-3.5 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
-            >
-              IT 서비스 견적 받기
-            </Link>
-          </div>
+          {/* IT 서비스 CTA (biz 없을 때만, biz 있으면 PlatformSection에 포함) */}
+          {!bizInfo && (
+            <div className="mt-8 rounded-2xl border border-border bg-surface p-6 sm:p-8 text-center">
+              <p className="text-base font-bold">
+                마케팅 실행이 필요하신가요?
+              </p>
+              <p className="mt-1 text-sm text-muted">
+                홈페이지 제작, 로고 디자인, 광고 제작까지 뚝딱이 도와드립니다
+              </p>
+              <Link
+                href="/services"
+                className="mt-5 inline-block rounded-xl bg-brand-orange px-8 py-3.5 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
+              >
+                IT 서비스 견적 받기
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </div>
