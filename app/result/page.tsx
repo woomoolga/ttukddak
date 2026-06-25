@@ -418,7 +418,7 @@ function ResultContent() {
                     {benefit.description}
                   </p>
                   <a
-                    href={`https://www.bizinfo.go.kr/web/lay1/bbs/S1T122C128/AS/74/view.do?search=${encodeURIComponent(benefit.title)}`}
+                    href={`https://www.bizinfo.go.kr/web/lay1/bbs/S1T122C128/AS/74/list.do?searchKeyword=${encodeURIComponent(benefit.title)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-block rounded-xl bg-brand-blue px-5 py-2.5 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
