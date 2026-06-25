@@ -105,7 +105,7 @@ export default function AboutPage() {
   return (
     <div className="mx-auto max-w-5xl px-5 py-16 sm:py-24">
       {/* Hero */}
-      <div className="mb-20 space-y-6 text-center">
+      <div className="mb-20 space-y-6 text-center bg-web-pattern rounded-3xl py-16">
         <p className="text-sm font-semibold tracking-widest text-brand-orange uppercase">
           About
         </p>
@@ -142,13 +142,13 @@ export default function AboutPage() {
       </div>
 
       {/* Mission Statement */}
-      <div className="mb-20 rounded-3xl bg-brand-blue p-10 text-center sm:p-16">
-        <p className="mx-auto max-w-lg text-lg font-medium leading-relaxed text-white/90 sm:text-xl">
+      <div className="mb-20 rounded-3xl border border-border bg-card p-10 text-center sm:p-16">
+        <p className="mx-auto max-w-lg text-lg font-medium leading-relaxed text-muted sm:text-xl">
           &ldquo;여러 사이트를 돌아다니며 정보를 찾을 필요 없이,
           <br className="hidden sm:block" />
           뚝딱 한 번이면 필요한 혜택을 모두 확인할 수 있습니다.
           <br />
-          <strong className="text-white">
+          <strong className="text-foreground">
             복잡한 것은 저희가, 간편한 것은 사장님이.
           </strong>
           &rdquo;

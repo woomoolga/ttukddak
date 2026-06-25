@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #111827;
-  --brand-deep-blue: #1a365d;
+  --background: #fafafa;
+  --foreground: #1a1a2e;
+  --brand-deep-blue: #1e3a5f;
   --brand-orange: #f6842a;
-  --brand-orange-light: #fef3e8;
-  --border: #e5e7eb;
-  --muted: #6b7280;
+  --brand-orange-light: #faf5ee;
+  --border: #e2e4e9;
+  --muted: #71717a;
   --card: #ffffff;
-  --card-hover: #f9fafb;
-  --surface: #f3f4f6;
+  --card-hover: #f7f7f8;
+  --surface: #f1f2f5;
 }
 
 @theme inline {
@@ -30,14 +30,14 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #09090b;
-    --foreground: #f3f4f6;
-    --brand-orange-light: #2a1a0a;
-    --border: #27272a;
-    --muted: #9ca3af;
-    --card: #18181b;
-    --card-hover: #1f1f23;
-    --surface: #111113;
+    --background: #0c0c14;
+    --foreground: #e8e8ed;
+    --brand-orange-light: #1f1810;
+    --border: #252530;
+    --muted: #8b8b9a;
+    --card: #14141e;
+    --card-hover: #1a1a26;
+    --surface: #101018;
   }
 }
 
@@ -60,6 +60,41 @@ body {
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
+}
+
+/* Web pattern background */
+.bg-web-pattern {
+  position: relative;
+  overflow: hidden;
+}
+.bg-web-pattern::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.06;
+  background-image:
+    linear-gradient(30deg, var(--brand-orange) 1px, transparent 1px),
+    linear-gradient(150deg, var(--brand-orange) 1px, transparent 1px),
+    linear-gradient(270deg, var(--brand-orange) 1px, transparent 1px),
+    radial-gradient(circle at 20% 30%, var(--brand-orange) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 80% 20%, var(--brand-orange) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 50% 70%, var(--brand-orange) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 15% 80%, var(--brand-orange) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 90% 60%, var(--brand-orange) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 40% 10%, var(--brand-orange) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 70% 90%, var(--brand-orange) 1.5px, transparent 1.5px);
+  background-size:
+    120px 120px,
+    120px 120px,
+    120px 120px,
+    200px 200px,
+    200px 200px,
+    200px 200px,
+    200px 200px,
+    200px 200px,
+    200px 200px,
+    200px 200px;
+  pointer-events: none;
 }
 
 /* Selection color */

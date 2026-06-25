@@ -54,7 +54,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero */}
-      <section className="flex min-h-[calc(100vh-7rem)] flex-col items-center justify-center px-5">
+      <section className="flex min-h-[calc(100vh-7rem)] flex-col items-center justify-center px-5 bg-web-pattern">
         <div className="w-full max-w-lg space-y-10 text-center">
           <div className="space-y-4">
             <h1 className="text-[2rem] font-extrabold leading-snug tracking-tight sm:text-[2.75rem] sm:leading-tight">
