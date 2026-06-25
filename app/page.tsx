@@ -48,7 +48,11 @@ export default function Home() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setBizNumber(formatBizNumber(e.target.value));
+    const raw = e.target.value;
+    const digitsOnly = raw.replace(/\D/g, "").slice(0, 10);
+    // 하이픈 포맷팅 시도, 실패하면 숫자만 저장
+    const formatted = formatBizNumber(raw);
+    setBizNumber(formatted || digitsOnly);
   };
 
   return (
@@ -76,7 +80,7 @@ export default function Home() {
               value={bizNumber}
               onChange={handleChange}
               placeholder="000-00-00000"
-              maxLength={12}
+              maxLength={14}
               className="w-full rounded-2xl border border-border bg-card px-6 py-4 text-center text-xl font-semibold tracking-widest transition-all placeholder:text-muted/40 focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
               autoFocus
             />
