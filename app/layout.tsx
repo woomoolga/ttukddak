@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
+import MobileNav from "./components/MobileNav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,7 +24,7 @@ const navItems = [
   { href: "/", label: "혜택 조회" },
   { href: "/marketing", label: "마케팅 가이드" },
   { href: "/services", label: "IT 서비스" },
-  { href: "/about", label: "뚝딱 소개" },
+  { href: "/about", label: "소개" },
 ];
 
 export default function RootLayout({
@@ -39,14 +40,16 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         {/* Header */}
         <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
-          <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-5">
+          <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5">
             <Link
               href="/"
               className="text-lg font-bold tracking-tight text-brand-blue"
             >
               뚝딱
             </Link>
-            <nav className="flex items-center gap-1">
+
+            {/* Desktop Nav */}
+            <nav className="hidden items-center gap-1 sm:flex">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
@@ -57,6 +60,9 @@ export default function RootLayout({
                 </Link>
               ))}
             </nav>
+
+            {/* Mobile Nav */}
+            <MobileNav items={navItems} />
           </div>
         </header>
 
@@ -64,11 +70,37 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
 
         {/* Footer */}
-        <footer className="border-t border-border">
-          <div className="mx-auto flex h-14 max-w-3xl items-center justify-center px-5">
-            <p className="text-xs text-muted">
-              &copy; {new Date().getFullYear()} 뚝딱. All rights reserved.
-            </p>
+        <footer className="border-t border-border bg-surface">
+          <div className="mx-auto max-w-5xl px-5 py-10">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+              <div className="space-y-2">
+                <p className="text-sm font-bold text-brand-blue">뚝딱</p>
+                <p className="text-xs text-muted leading-relaxed">
+                  사업자를 위한 올인원 혜택 검색 서비스
+                </p>
+              </div>
+              <div className="flex gap-8">
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-foreground">서비스</p>
+                  <div className="flex flex-col gap-1.5">
+                    <Link href="/" className="text-xs text-muted hover:text-brand-orange transition-colors">혜택 조회</Link>
+                    <Link href="/marketing" className="text-xs text-muted hover:text-brand-orange transition-colors">마케팅 가이드</Link>
+                    <Link href="/services" className="text-xs text-muted hover:text-brand-orange transition-colors">IT 서비스</Link>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-foreground">회사</p>
+                  <div className="flex flex-col gap-1.5">
+                    <Link href="/about" className="text-xs text-muted hover:text-brand-orange transition-colors">소개</Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-8 border-t border-border pt-6">
+              <p className="text-xs text-muted">
+                &copy; {new Date().getFullYear()} 뚝딱. All rights reserved.
+              </p>
+            </div>
           </div>
         </footer>
       </body>
