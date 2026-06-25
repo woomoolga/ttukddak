@@ -74,9 +74,13 @@ export default function Home() {
             <input
               type="text"
               inputMode="numeric"
-              pattern="[0-9]*"
               value={displayValue}
               onChange={handleChange}
+              onInput={(e) => {
+                const target = e.target as HTMLInputElement;
+                const digits = target.value.replace(/\D/g, "").slice(0, 10);
+                setRawDigits(digits);
+              }}
               placeholder="000-00-00000"
               maxLength={14}
               className="w-full rounded-2xl border border-border bg-card px-6 py-4 text-center text-xl font-semibold tracking-widest transition-all placeholder:text-muted/40 focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"

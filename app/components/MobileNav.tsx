@@ -14,8 +14,9 @@ export default function MobileNav({ items }: MobileNavProps) {
     <div className="relative sm:hidden">
       <button
         type="button"
-        onClick={() => setOpen(!open)}
-        className="relative z-[60] flex h-10 w-10 items-center justify-center rounded-lg text-muted transition-colors hover:bg-brand-orange-light hover:text-brand-orange active:bg-brand-orange-light"
+        onClick={() => setOpen((prev) => !prev)}
+        onTouchEnd={(e) => { e.preventDefault(); setOpen((prev) => !prev); }}
+        className="relative z-[60] flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-muted transition-colors hover:bg-brand-orange-light hover:text-brand-orange active:bg-brand-orange-light"
         aria-label={open ? "메뉴 닫기" : "메뉴 열기"}
       >
         <svg
