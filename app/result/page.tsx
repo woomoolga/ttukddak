@@ -417,12 +417,14 @@ function ResultContent() {
                   <p className="text-sm leading-relaxed text-muted">
                     {benefit.description}
                   </p>
-                  <button
-                    type="button"
-                    className="rounded-xl bg-brand-blue px-5 py-2.5 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
+                  <a
+                    href={`https://www.bizinfo.go.kr/web/lay1/bbs/S1T122C128/AS/74/view.do?search=${encodeURIComponent(benefit.title)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block rounded-xl bg-brand-blue px-5 py-2.5 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
                   >
                     신청 방법 보기
-                  </button>
+                  </a>
                 </div>
               )}
             </div>
