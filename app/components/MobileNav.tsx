@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 
 interface MobileNavProps {
@@ -10,60 +10,74 @@ interface MobileNavProps {
 export default function MobileNav({ items }: MobileNavProps) {
   const [open, setOpen] = useState(false);
 
+  const toggle = useCallback(() => {
+    setOpen((prev) => !prev);
+  }, []);
+
+  const close = useCallback(() => {
+    setOpen(false);
+  }, []);
+
   return (
-    <div className="relative sm:hidden">
+    <div className="sm:hidden">
       <button
         type="button"
-        onClick={() => setOpen((prev) => !prev)}
-        onTouchEnd={(e) => { e.preventDefault(); setOpen((prev) => !prev); }}
-        className="relative z-[60] flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-muted transition-colors hover:bg-brand-orange-light hover:text-brand-orange active:bg-brand-orange-light"
+        onClick={toggle}
+        style={{ WebkitTapHighlightColor: "transparent" }}
+        className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-muted"
         aria-label={open ? "메뉴 닫기" : "메뉴 열기"}
       >
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 20 20"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        >
-          {open ? (
-            <>
-              <line x1="4" y1="4" x2="16" y2="16" />
-              <line x1="16" y1="4" x2="4" y2="16" />
-            </>
-          ) : (
-            <>
-              <line x1="3" y1="6" x2="17" y2="6" />
-              <line x1="3" y1="10" x2="17" y2="10" />
-              <line x1="3" y1="14" x2="17" y2="14" />
-            </>
-          )}
-        </svg>
+        {open ? (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <line x1="6" y1="6" x2="18" y2="18" />
+            <line x1="18" y1="6" x2="6" y2="18" />
+          </svg>
+        ) : (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <line x1="4" y1="7" x2="20" y2="7" />
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <line x1="4" y1="17" x2="20" y2="17" />
+          </svg>
+        )}
       </button>
 
       {open && (
-        <>
+        <div
+          style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999 }}
+          onClick={close}
+        >
           <div
-            className="fixed inset-0 z-[55] bg-black/20"
-            onClick={() => setOpen(false)}
-          />
-          <div className="fixed left-0 right-0 top-14 z-[60] border-b border-border bg-background/98 backdrop-blur-xl">
-            <nav className="mx-auto max-w-5xl px-5 py-3">
+            style={{
+              position: "absolute",
+              top: "56px",
+              left: 0,
+              right: 0,
+              background: "var(--background)",
+              borderBottom: "1px solid var(--border)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <nav style={{ padding: "8px 20px" }}>
               {items.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={() => setOpen(false)}
-                  className="block rounded-lg px-3 py-3 text-base font-medium text-muted transition-colors hover:bg-brand-orange-light hover:text-brand-orange active:bg-brand-orange-light"
+                  onClick={close}
+                  style={{
+                    display: "block",
+                    padding: "14px 12px",
+                    fontSize: "15px",
+                    fontWeight: 500,
+                    color: "var(--muted)",
+                    textDecoration: "none",
+                  }}
                 >
                   {item.label}
                 </Link>
               ))}
             </nav>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
