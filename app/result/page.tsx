@@ -18,64 +18,146 @@ interface BusinessInfo {
   source: { nts: boolean; bizno: boolean };
 }
 
-// 혜택 더미 데이터 (나중에 기업마당 API 연동)
-const DUMMY_BENEFITS = [
+// 업종/지역별 혜택 데이터 (나중에 기업마당 API 연동)
+interface Benefit {
+  id: number;
+  category: string;
+  title: string;
+  amount: string;
+  eligibility: string;
+  deadline: string;
+  dDay: number | null;
+  description: string;
+}
+
+// 공통 혜택 (모든 사업자)
+const COMMON_BENEFITS: Benefit[] = [
   {
-    id: 1,
-    category: "정부지원금",
-    title: "중소기업 디지털 전환 지원사업",
-    amount: "최대 3,000만원",
-    eligibility: "매출 100억 이하 중소기업",
-    deadline: "2026-07-31",
-    dDay: 36,
-    description:
-      "클라우드, AI, 데이터 분석 등 디지털 기술 도입 비용의 50%를 지원합니다.",
-  },
-  {
-    id: 2,
+    id: 100,
     category: "세금 혜택",
     title: "중소기업 특별세액감면",
     amount: "법인세 최대 30% 감면",
-    eligibility: "수도권 소재 중소기업",
+    eligibility: "중소기업기본법상 중소기업",
     deadline: "2026-12-31",
     dDay: 189,
-    description:
-      "중소기업기본법에 따른 중소기업이 감면 대상 업종을 영위하는 경우 법인세를 감면받을 수 있습니다.",
+    description: "중소기업이 감면 대상 업종을 영위하는 경우 법인세 또는 소득세를 감면받을 수 있습니다.",
   },
   {
-    id: 3,
+    id: 101,
     category: "정부지원금",
     title: "청년 추가고용 장려금",
     amount: "1인당 연 900만원 (3년간)",
     eligibility: "청년 정규직 신규 채용 기업",
     deadline: "2026-08-15",
     dDay: 51,
-    description:
-      "만 15~34세 청년을 정규직으로 신규 채용한 중소기업에 인건비를 지원합니다.",
+    description: "만 15~34세 청년을 정규직으로 신규 채용한 중소기업에 인건비를 지원합니다.",
   },
   {
-    id: 4,
-    category: "인증/인허가",
-    title: "벤처기업 인증",
-    amount: "세금 감면 + 금융 우대",
-    eligibility: "기술성 평가 우수 기업",
-    deadline: "상시 접수",
-    dDay: null,
-    description:
-      "벤처기업 인증을 받으면 법인세 감면, 취득세 면제, 정책자금 우대 등 다양한 혜택을 받을 수 있습니다.",
-  },
-  {
-    id: 5,
-    category: "마케팅 지원",
-    title: "수출바우처 사업",
-    amount: "최대 1억원 바우처",
-    eligibility: "수출 실적 또는 수출 계획 보유 기업",
-    deadline: "2026-09-30",
-    dDay: 97,
-    description:
-      "해외 마케팅, 통번역, 디자인, 법률자문 등 수출에 필요한 서비스를 바우처로 이용할 수 있습니다.",
+    id: 102,
+    category: "정부지원금",
+    title: "중소기업 디지털 전환 지원사업",
+    amount: "최대 3,000만원",
+    eligibility: "매출 100억 이하 중소기업",
+    deadline: "2026-07-31",
+    dDay: 36,
+    description: "클라우드, AI, 데이터 분석 등 디지털 기술 도입 비용의 50%를 지원합니다.",
   },
 ];
+
+// 업종별 혜택
+const INDUSTRY_BENEFITS: Record<string, Benefit[]> = {
+  "제조업": [
+    { id: 201, category: "정부지원금", title: "스마트공장 구축 지원사업", amount: "최대 1억원 (50% 매칭)", eligibility: "제조업 중소기업", deadline: "2026-09-30", dDay: 97, description: "생산 공정에 IoT, AI, 빅데이터 등 스마트 기술을 도입하는 제조기업에 구축 비용을 지원합니다." },
+    { id: 202, category: "인증/인허가", title: "ISO 인증 취득 지원", amount: "인증 비용 70% 지원 (최대 500만원)", eligibility: "제조업 중소기업", deadline: "상시 접수", dDay: null, description: "ISO 9001, 14001 등 국제 품질/환경 인증 취득에 필요한 컨설팅 및 심사 비용을 지원합니다." },
+    { id: 203, category: "마케팅 지원", title: "수출바우처 사업", amount: "최대 1억원 바우처", eligibility: "수출 실적 또는 수출 계획 보유 제조기업", deadline: "2026-09-30", dDay: 97, description: "해외 마케팅, 통번역, 디자인, 법률자문 등 수출에 필요한 서비스를 바우처로 이용할 수 있습니다." },
+  ],
+  "음식점": [
+    { id: 211, category: "정부지원금", title: "소상공인 배달·O2O 지원사업", amount: "최대 200만원", eligibility: "배달앱 입점 소상공인", deadline: "2026-08-31", dDay: 67, description: "배달앱 입점비, 포장재, 메뉴 사진 촬영 등 온라인 판로 개척 비용을 지원합니다." },
+    { id: 212, category: "위생/안전", title: "음식점 위생등급제 인센티브", amount: "위생등급 취득 시 행정 혜택", eligibility: "일반음식점, 휴게음식점", deadline: "상시 접수", dDay: null, description: "식약처 위생등급(매우우수/우수) 취득 시 위생점검 면제, 융자 우대 등 혜택을 받을 수 있습니다." },
+    { id: 213, category: "세금 혜택", title: "음식점업 부가세 간이과세 특례", amount: "부가세 감면", eligibility: "연매출 1억 400만원 미만 음식점", deadline: "2026-12-31", dDay: 189, description: "간이과세 적용 시 부가가치세 부담이 크게 줄어들며, 세금계산서 발행 의무도 면제됩니다." },
+  ],
+  "소매": [
+    { id: 221, category: "정부지원금", title: "전통시장·상점가 활성화 지원", amount: "최대 5,000만원", eligibility: "전통시장 및 상점가 소속 소매업자", deadline: "2026-07-31", dDay: 36, description: "시설 현대화, 공동마케팅, 경영혁신 등 전통시장 활성화를 위한 사업비를 지원합니다." },
+    { id: 222, category: "마케팅 지원", title: "소상공인 온라인 판로 지원사업", amount: "입점비·수수료 지원 (최대 300만원)", eligibility: "소매업 소상공인", deadline: "2026-10-31", dDay: 128, description: "네이버 스마트스토어, 쿠팡 등 온라인 마켓플레이스 입점 및 운영에 필요한 비용을 지원합니다." },
+  ],
+  "IT": [
+    { id: 231, category: "인증/인허가", title: "벤처기업 인증", amount: "세금 감면 + 금융 우대", eligibility: "기술성 평가 우수 IT 기업", deadline: "상시 접수", dDay: null, description: "벤처기업 인증을 받으면 법인세 감면, 취득세 면제, 정책자금 우대 등 다양한 혜택을 받을 수 있습니다." },
+    { id: 232, category: "정부지원금", title: "초기창업패키지", amount: "최대 1억원 (1년)", eligibility: "창업 3년 이내 IT/기술 기업", deadline: "2026-08-15", dDay: 51, description: "사업화 자금, 멘토링, 사무공간 등 초기 창업에 필요한 종합 패키지를 지원합니다." },
+    { id: 233, category: "정부지원금", title: "클라우드 서비스 이용 지원", amount: "최대 400만원 (70% 지원)", eligibility: "IT 중소기업·스타트업", deadline: "2026-09-30", dDay: 97, description: "AWS, GCP, Azure 등 클라우드 서비스 이용료를 지원하여 인프라 비용 부담을 줄여줍니다." },
+  ],
+  "교육": [
+    { id: 241, category: "정부지원금", title: "직업훈련기관 시설·장비 지원", amount: "최대 2억원", eligibility: "직업훈련기관, 학원", deadline: "2026-07-31", dDay: 36, description: "직업훈련 시설 개보수 및 교육 장비 구입 비용을 지원합니다." },
+    { id: 242, category: "세금 혜택", title: "교육서비스업 부가세 면제", amount: "부가가치세 면제", eligibility: "학원법상 등록 학원", deadline: "상시 적용", dDay: null, description: "교육용역에 대한 부가가치세가 면제되어 수강료에 부가세를 포함하지 않아도 됩니다." },
+  ],
+  "건설": [
+    { id: 251, category: "정부지원금", title: "건설업 안전관리비 지원", amount: "공사금액의 일정 비율", eligibility: "건설업 등록 기업", deadline: "상시 적용", dDay: null, description: "산업안전보건법에 따라 건설 현장 안전시설 설치, 보호장구 구입 등에 안전관리비를 사용할 수 있습니다." },
+    { id: 252, category: "인증/인허가", title: "건설업 시공능력평가 가점", amount: "기술개발 투자 시 가점", eligibility: "건설업 등록 중소기업", deadline: "2026-12-31", dDay: 189, description: "기술개발 투자, 사회공헌 실적 등을 통해 시공능력평가 순위를 높일 수 있습니다." },
+  ],
+};
+
+// 지역별 혜택
+const REGION_BENEFITS: Record<string, Benefit[]> = {
+  "경상남도": [
+    { id: 301, category: "지자체 지원", title: "경남 소상공인 경영안정자금", amount: "최대 5,000만원 (저금리 대출)", eligibility: "경상남도 소재 소상공인", deadline: "2026-11-30", dDay: 158, description: "경남 소재 소상공인에게 경영안정을 위한 저금리 정책자금을 융자 지원합니다." },
+    { id: 302, category: "지자체 지원", title: "경남 청년 창업 지원사업", amount: "최대 3,000만원", eligibility: "만 39세 이하 경남 소재 창업자", deadline: "2026-08-31", dDay: 67, description: "경남 지역 청년 창업자에게 사업화 자금, 멘토링, 교육을 지원합니다." },
+  ],
+  "서울": [
+    { id: 311, category: "지자체 지원", title: "서울시 소상공인 디지털 전환 지원", amount: "최대 500만원", eligibility: "서울 소재 소상공인", deadline: "2026-09-30", dDay: 97, description: "키오스크 도입, 배달앱 연동, POS 시스템 등 디지털 전환 비용을 지원합니다." },
+    { id: 312, category: "지자체 지원", title: "서울 신기술 창업사관학교", amount: "사무공간 + 최대 1억원", eligibility: "서울 소재 기술 창업기업", deadline: "2026-07-31", dDay: 36, description: "마포구 소재 창업보육센터 입주 + 사업화 자금 + 전문 멘토링을 제공합니다." },
+  ],
+  "대전": [
+    { id: 321, category: "지자체 지원", title: "대전 강소기업 육성 지원", amount: "최대 2,000만원", eligibility: "대전 소재 중소기업", deadline: "2026-10-31", dDay: 128, description: "기술개발, 마케팅, 인력양성 등 강소기업 성장에 필요한 사업비를 지원합니다." },
+    { id: 322, category: "지자체 지원", title: "대전 소상공인 폐업 재기 지원", amount: "최대 200만원 + 컨설팅", eligibility: "대전 소재 폐업/재기 소상공인", deadline: "상시 접수", dDay: null, description: "폐업 소상공인의 재취업 또는 재창업을 위한 자금 및 전문 컨설팅을 지원합니다." },
+  ],
+  "경기도": [
+    { id: 331, category: "지자체 지원", title: "경기도 중소기업 판로 지원사업", amount: "전시회 참가비 (최대 1,000만원)", eligibility: "경기도 소재 중소기업", deadline: "2026-08-31", dDay: 67, description: "국내외 전시회, 박람회 참가 비용 및 온라인 판로 개척 비용을 지원합니다." },
+    { id: 332, category: "지자체 지원", title: "경기 청년 일자리 장려금", amount: "월 40만원 (6개월)", eligibility: "경기도 소재 중소기업", deadline: "2026-12-31", dDay: 189, description: "경기도 소재 중소기업이 청년을 정규직으로 채용 시 인건비를 보조합니다." },
+  ],
+};
+
+function getBenefitsForBusiness(info: BusinessInfo | null): Benefit[] {
+  if (!info) return COMMON_BENEFITS;
+
+  const benefits: Benefit[] = [...COMMON_BENEFITS];
+
+  // 업종 매칭
+  const industry = info.industry || "";
+  if (industry.includes("제조")) {
+    benefits.push(...(INDUSTRY_BENEFITS["제조업"] || []));
+  } else if (industry.includes("음식") || industry.includes("식품") || industry.includes("요식")) {
+    benefits.push(...(INDUSTRY_BENEFITS["음식점"] || []));
+  } else if (industry.includes("소매") || industry.includes("도매") || industry.includes("유통") || industry.includes("판매")) {
+    benefits.push(...(INDUSTRY_BENEFITS["소매"] || []));
+  } else if (industry.includes("소프트웨어") || industry.includes("정보") || industry.includes("IT") || industry.includes("컴퓨터") || industry.includes("프로그램")) {
+    benefits.push(...(INDUSTRY_BENEFITS["IT"] || []));
+  } else if (industry.includes("교육") || industry.includes("학원") || industry.includes("훈련")) {
+    benefits.push(...(INDUSTRY_BENEFITS["교육"] || []));
+  } else if (industry.includes("건설") || industry.includes("건축") || industry.includes("인테리어")) {
+    benefits.push(...(INDUSTRY_BENEFITS["건설"] || []));
+  }
+
+  // 지역 매칭
+  const address = info.address || "";
+  if (address.includes("경상남도")) {
+    benefits.push(...(REGION_BENEFITS["경상남도"] || []));
+  } else if (address.includes("서울")) {
+    benefits.push(...(REGION_BENEFITS["서울"] || []));
+  } else if (address.includes("대전")) {
+    benefits.push(...(REGION_BENEFITS["대전"] || []));
+  } else if (address.includes("경기")) {
+    benefits.push(...(REGION_BENEFITS["경기도"] || []));
+  }
+
+  // 마감일순 정렬 (상시 접수는 마지막)
+  benefits.sort((a, b) => {
+    if (a.dDay === null && b.dDay === null) return 0;
+    if (a.dDay === null) return 1;
+    if (b.dDay === null) return -1;
+    return a.dDay - b.dDay;
+  });
+
+  return benefits;
+}
 
 function getCategoryColor(category: string): string {
   switch (category) {
@@ -102,6 +184,8 @@ function ResultContent() {
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  const benefits = getBenefitsForBusiness(bizInfo);
 
   const formatted = biz
     ? `${biz.slice(0, 3)}-${biz.slice(3, 5)}-${biz.slice(5)}`
@@ -277,14 +361,14 @@ function ResultContent() {
       <div className="mt-8 mb-6 flex items-baseline justify-between">
         <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
           받을 수 있는 혜택{" "}
-          <span className="text-brand-orange">{DUMMY_BENEFITS.length}건</span>
+          <span className="text-brand-orange">{benefits.length}건</span>
         </h1>
         <p className="text-xs text-muted">마감일순 정렬</p>
       </div>
 
       {/* Benefit Cards */}
       <div className="space-y-4">
-        {DUMMY_BENEFITS.map((benefit) => {
+        {benefits.map((benefit) => {
           const isExpanded = expandedId === benefit.id;
           return (
             <div
