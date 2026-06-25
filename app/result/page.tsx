@@ -1,18 +1,24 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-// 더미 데이터
-const DUMMY_BIZ_INFO = {
-  name: "주식회사 테스트컴퍼니",
-  type: "법인사업자",
-  industry: "소프트웨어 개발업",
-  region: "서울특별시 강남구",
-  established: "2023-03-15",
-};
+interface BusinessInfo {
+  businessNumber: string;
+  businessName: string;
+  representative: string;
+  industry: string;
+  businessType: string;
+  address: string;
+  status: string;
+  taxType: string;
+  establishedDate: string;
+  employeeCount: string;
+  source: { nts: boolean; bizno: boolean };
+}
 
+// 혜택 더미 데이터 (나중에 기업마당 API 연동)
 const DUMMY_BENEFITS = [
   {
     id: 1,
@@ -89,6 +95,10 @@ function getCategoryColor(category: string): string {
 function ResultContent() {
   const searchParams = useSearchParams();
   const biz = searchParams.get("biz") || "";
+
+  const [bizInfo, setBizInfo] = useState<BusinessInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -97,11 +107,108 @@ function ResultContent() {
     ? `${biz.slice(0, 3)}-${biz.slice(3, 5)}-${biz.slice(5)}`
     : "";
 
+  useEffect(() => {
+    if (!biz || biz.length !== 10) {
+      setError("올바른 사업자등록번호를 입력해주세요.");
+      setLoading(false);
+      return;
+    }
+
+    const fetchData = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const res = await fetch("/api/business", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ businessNumber: biz }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          setError(data.error || "조회에 실패했습니다.");
+          setLoading(false);
+          return;
+        }
+
+        const data: BusinessInfo = await res.json();
+        setBizInfo(data);
+      } catch {
+        setError("서버와 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [biz]);
+
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
     setEmailSent(true);
   };
+
+  // 로딩 상태
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-5xl px-5 py-10 sm:py-16">
+        <Link
+          href="/"
+          className="mb-8 inline-block text-sm font-medium text-muted transition-colors hover:text-brand-orange"
+        >
+          &larr; 다시 조회하기
+        </Link>
+        <div className="flex flex-col items-center justify-center py-20 space-y-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-orange border-t-transparent" />
+          <p className="text-sm text-muted">
+            사업자 정보를 조회하고 있습니다...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <div className="mx-auto max-w-5xl px-5 py-10 sm:py-16">
+        <Link
+          href="/"
+          className="mb-8 inline-block text-sm font-medium text-muted transition-colors hover:text-brand-orange"
+        >
+          &larr; 다시 조회하기
+        </Link>
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center dark:border-red-900 dark:bg-red-950">
+          <p className="text-base font-bold text-red-700 dark:text-red-300">
+            조회 실패
+          </p>
+          <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+            {error}
+          </p>
+          <Link
+            href="/"
+            className="mt-6 inline-block rounded-xl bg-brand-blue px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
+          >
+            다시 조회하기
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // 정보 항목 렌더링 헬퍼
+  const infoItems = [
+    { label: "사업자명", value: bizInfo?.businessName },
+    { label: "대표자", value: bizInfo?.representative },
+    { label: "업종", value: bizInfo?.industry },
+    { label: "종목", value: bizInfo?.businessType },
+    { label: "소재지", value: bizInfo?.address },
+    { label: "사업자 상태", value: bizInfo?.status },
+    { label: "과세유형", value: bizInfo?.taxType },
+    { label: "설립일", value: bizInfo?.establishedDate },
+    { label: "종업원수", value: bizInfo?.employeeCount },
+  ].filter((item) => item.value);
 
   return (
     <div className="mx-auto max-w-5xl px-5 py-10 sm:py-16">
@@ -115,25 +222,54 @@ function ResultContent() {
 
       {/* Biz Info Card */}
       <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted">사업자번호</p>
-            <p className="text-lg font-bold tracking-wider">{formatted}</p>
+        <div className="flex flex-col gap-5">
+          {/* 상단: 사업자번호 + 사업자명 */}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted">사업자번호</p>
+              <p className="text-lg font-bold tracking-wider">{formatted}</p>
+            </div>
+            {bizInfo?.businessName && (
+              <div className="sm:text-right">
+                <p className="text-xs font-medium text-muted">사업자명</p>
+                <p className="text-lg font-bold">{bizInfo.businessName}</p>
+              </div>
+            )}
           </div>
-          <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm">
-            <div>
-              <p className="text-xs text-muted">업종</p>
-              <p className="font-medium">{DUMMY_BIZ_INFO.industry}</p>
+
+          {/* 상세 정보 그리드 */}
+          {infoItems.length > 0 && (
+            <div className="border-t border-border pt-5">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {infoItems
+                  .filter((item) => item.label !== "사업자명")
+                  .map((item) => (
+                    <div key={item.label}>
+                      <p className="text-xs text-muted">{item.label}</p>
+                      <p className="mt-0.5 text-sm font-medium">
+                        {item.value}
+                      </p>
+                    </div>
+                  ))}
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-muted">지역</p>
-              <p className="font-medium">{DUMMY_BIZ_INFO.region}</p>
+          )}
+
+          {/* 데이터 소스 표시 */}
+          {bizInfo?.source && (
+            <div className="flex gap-2 pt-1">
+              {bizInfo.source.nts && (
+                <span className="rounded-lg bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-950 dark:text-green-300">
+                  국세청 확인
+                </span>
+              )}
+              {bizInfo.source.bizno && (
+                <span className="rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                  사업자정보 확인
+                </span>
+              )}
             </div>
-            <div>
-              <p className="text-xs text-muted">사업자 유형</p>
-              <p className="font-medium">{DUMMY_BIZ_INFO.type}</p>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
