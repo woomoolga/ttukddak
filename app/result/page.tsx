@@ -346,8 +346,29 @@ function ResultContent() {
         })}
       </div>
 
+      {/* Marketing CTA */}
+      {bizInfo?.businessName && (
+        <div className="mt-12 rounded-2xl border border-brand-orange/30 bg-gradient-to-r from-brand-blue/5 to-brand-orange/5 p-6 sm:p-8 text-center dark:from-brand-blue/10 dark:to-brand-orange/10">
+          <p className="text-lg font-bold sm:text-xl">
+            {bizInfo.businessName}에 적합한
+          </p>
+          <p className="text-lg font-bold sm:text-xl">
+            무료 마케팅 가이드를 확인해보세요
+          </p>
+          <p className="mt-2 text-sm text-muted">
+            AI가 업종과 지역에 맞는 맞춤형 마케팅 전략을 분석합니다
+          </p>
+          <Link
+            href={`/marketing?biz=${biz}`}
+            className="mt-5 inline-block rounded-xl bg-brand-orange px-8 py-3.5 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
+          >
+            마케팅 가이드 받기
+          </Link>
+        </div>
+      )}
+
       {/* Email Section */}
-      <div className="mt-12 rounded-2xl border border-border bg-surface p-6 sm:p-8">
+      <div className="mt-8 rounded-2xl border border-border bg-surface p-6 sm:p-8">
         {emailSent ? (
           <div className="text-center space-y-2">
             <p className="text-base font-bold">전송 완료</p>
