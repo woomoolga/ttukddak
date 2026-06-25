@@ -18,6 +18,22 @@ interface BusinessInfo {
   source: { nts: boolean; bizno: boolean };
 }
 
+interface TaxGuideData {
+  industryCode: string;
+  industryName: string;
+  standardRate: number;
+  simpleRate: number;
+  category: string;
+  deductibleItems: string[];
+}
+
+interface TaxGuideResponse {
+  matched: boolean;
+  data?: TaxGuideData;
+  similar?: TaxGuideData[];
+  message?: string;
+}
+
 // 업종/지역별 혜택 데이터 (나중에 기업마당 API 연동)
 interface Benefit {
   id: number;
@@ -184,6 +200,8 @@ function ResultContent() {
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [taxGuide, setTaxGuide] = useState<TaxGuideResponse | null>(null);
+  const [taxGuideLoading, setTaxGuideLoading] = useState(false);
 
   const benefits = getBenefitsForBusiness(bizInfo);
 
@@ -226,6 +244,32 @@ function ResultContent() {
 
     fetchData();
   }, [biz]);
+
+  // 절세 가이드 조회
+  useEffect(() => {
+    if (!bizInfo?.industry) return;
+
+    const fetchTaxGuide = async () => {
+      setTaxGuideLoading(true);
+      try {
+        const res = await fetch("/api/tax-guide", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ industry: bizInfo.industry }),
+        });
+        if (res.ok) {
+          const data: TaxGuideResponse = await res.json();
+          setTaxGuide(data);
+        }
+      } catch {
+        // 절세 가이드 실패해도 메인 페이지에 영향 없음
+      } finally {
+        setTaxGuideLoading(false);
+      }
+    };
+
+    fetchTaxGuide();
+  }, [bizInfo?.industry]);
 
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -431,6 +475,114 @@ function ResultContent() {
           );
         })}
       </div>
+
+      {/* Tax Guide Section */}
+      {taxGuideLoading && (
+        <div className="mt-10 rounded-2xl border border-border bg-card p-6 sm:p-8">
+          <div className="flex items-center gap-3">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-brand-blue border-t-transparent" />
+            <p className="text-sm text-muted">업종별 절세 가이드를 불러오고 있습니다...</p>
+          </div>
+        </div>
+      )}
+
+      {!taxGuideLoading && taxGuide?.matched && taxGuide.data && (
+        <div className="mt-10">
+          <h2 className="mb-4 text-xl font-bold tracking-tight sm:text-2xl">
+            절세 가이드
+          </h2>
+
+          <div className="rounded-2xl border border-brand-blue/20 bg-gradient-to-br from-brand-blue/[0.03] to-transparent p-6 sm:p-8 dark:from-brand-blue/[0.08]">
+            {/* 업종명 + 경비율 요약 */}
+            <div className="space-y-1">
+              <span className="inline-block rounded-lg bg-brand-blue/10 px-2.5 py-1 text-xs font-semibold text-brand-blue dark:bg-brand-blue/20 dark:text-blue-300">
+                {taxGuide.data.category}
+              </span>
+              <p className="text-base font-bold sm:text-lg">
+                {taxGuide.data.industryName}
+                <span className="ml-2 text-xs font-normal text-muted">
+                  (업종코드 {taxGuide.data.industryCode})
+                </span>
+              </p>
+            </div>
+
+            {/* 경비율 카드 */}
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-xs text-muted">단순경비율</p>
+                <p className="mt-1 text-2xl font-bold text-brand-orange">
+                  {taxGuide.data.simpleRate}%
+                </p>
+                <p className="mt-1 text-xs text-muted leading-relaxed">
+                  매출의 {taxGuide.data.simpleRate}%를 경비로 인정받습니다.
+                  소규모 사업자(직전연도 매출 기준)에게 적용됩니다.
+                </p>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-xs text-muted">기준경비율</p>
+                <p className="mt-1 text-2xl font-bold text-brand-blue">
+                  {taxGuide.data.standardRate}%
+                </p>
+                <p className="mt-1 text-xs text-muted leading-relaxed">
+                  주요경비(매입비, 임차료, 인건비)는 별도 증빙으로 공제하고,
+                  나머지 {taxGuide.data.standardRate}%를 추가 경비로 인정합니다.
+                </p>
+              </div>
+            </div>
+
+            {/* 비용처리 가능 항목 */}
+            <div className="mt-5">
+              <p className="text-sm font-semibold">이 업종에서 비용처리 가능한 항목</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {taxGuide.data.deductibleItems.map((item) => (
+                  <span
+                    key={item}
+                    className="rounded-lg border border-border bg-surface px-2.5 py-1 text-xs font-medium"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* 팁 */}
+            <div className="mt-5 rounded-xl border border-green-200 bg-green-50/50 p-4 dark:border-green-900 dark:bg-green-950/30">
+              <p className="text-sm font-semibold text-green-800 dark:text-green-300">
+                장부 기장 시 절세 효과
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-green-700 dark:text-green-400">
+                장부를 작성하면 실제 지출한 경비를 모두 인정받을 수 있어,
+                경비율 적용보다 세금을 더 줄일 수 있습니다.
+                특히 매출 대비 실제 경비 비율이{" "}
+                {taxGuide.data.simpleRate > 85
+                  ? "단순경비율보다 높다면"
+                  : "경비율보다 높다면"}{" "}
+                장부 기장이 유리합니다.
+              </p>
+            </div>
+
+            {/* 홈택스 링크 */}
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <a
+                href="https://hometax.go.kr/websquare/websquare.html?w2xPath=/ui/pp/index_pp.xml&tmIdx=41&tm2lIdx=4103090000&tm3lIdx=4103090400"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block rounded-xl bg-brand-blue px-5 py-2.5 text-center text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
+              >
+                홈택스에서 경비율 조회
+              </a>
+              <a
+                href="https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?mi=2230&cntntsId=7669"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block rounded-xl border border-border bg-card px-5 py-2.5 text-center text-sm font-semibold transition-all hover:bg-card-hover active:scale-[0.98]"
+              >
+                기장의무 판단 기준 보기
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Marketing CTA */}
       {bizInfo?.businessName && (

@@ -1,0 +1,554 @@
+[
+  {
+    "industryCode": "552101",
+    "industryName": "한식 음식점업",
+    "standardRate": 10.1,
+    "simpleRate": 89.7,
+    "category": "음식점",
+    "deductibleItems": ["식재료 구입비", "임차료", "인건비", "배달앱 수수료", "가스/전기/수도", "소모품비", "신용카드 수수료"]
+  },
+  {
+    "industryCode": "552102",
+    "industryName": "중식 음식점업",
+    "standardRate": 10.1,
+    "simpleRate": 89.7,
+    "category": "음식점",
+    "deductibleItems": ["식재료 구입비", "임차료", "인건비", "배달앱 수수료", "가스/전기/수도", "소모품비", "신용카드 수수료"]
+  },
+  {
+    "industryCode": "552103",
+    "industryName": "일식 음식점업",
+    "standardRate": 10.1,
+    "simpleRate": 89.7,
+    "category": "음식점",
+    "deductibleItems": ["식재료 구입비", "임차료", "인건비", "배달앱 수수료", "가스/전기/수도", "소모품비", "신용카드 수수료"]
+  },
+  {
+    "industryCode": "552104",
+    "industryName": "서양식 음식점업",
+    "standardRate": 10.1,
+    "simpleRate": 89.7,
+    "category": "음식점",
+    "deductibleItems": ["식재료 구입비", "임차료", "인건비", "배달앱 수수료", "가스/전기/수도", "소모품비", "신용카드 수수료"]
+  },
+  {
+    "industryCode": "552107",
+    "industryName": "분식 음식점업",
+    "standardRate": 10.1,
+    "simpleRate": 89.7,
+    "category": "음식점",
+    "deductibleItems": ["식재료 구입비", "임차료", "인건비", "배달앱 수수료", "가스/전기/수도", "소모품비"]
+  },
+  {
+    "industryCode": "552105",
+    "industryName": "기타 외국식 음식점업",
+    "standardRate": 10.1,
+    "simpleRate": 89.7,
+    "category": "음식점",
+    "deductibleItems": ["식재료 구입비", "임차료", "인건비", "배달앱 수수료", "가스/전기/수도", "소모품비"]
+  },
+  {
+    "industryCode": "552106",
+    "industryName": "치킨 전문점업",
+    "standardRate": 10.1,
+    "simpleRate": 89.7,
+    "category": "음식점",
+    "deductibleItems": ["식재료 구입비", "임차료", "인건비", "배달앱 수수료", "가스/전기/수도", "포장재비", "소모품비"]
+  },
+  {
+    "industryCode": "552301",
+    "industryName": "제과점업",
+    "standardRate": 12.8,
+    "simpleRate": 88.6,
+    "category": "음식점",
+    "deductibleItems": ["원재료 구입비", "임차료", "인건비", "포장재비", "가스/전기/수도", "설비 감가상각비"]
+  },
+  {
+    "industryCode": "552303",
+    "industryName": "커피 전문점",
+    "standardRate": 14.3,
+    "simpleRate": 87.8,
+    "category": "음식점",
+    "deductibleItems": ["원두/음료 원재료비", "임차료", "인건비", "일회용품/포장비", "전기/수도", "배달앱 수수료", "인테리어 감가상각비"]
+  },
+  {
+    "industryCode": "552307",
+    "industryName": "기타 비알코올 음료점업",
+    "standardRate": 15.1,
+    "simpleRate": 89.0,
+    "category": "음식점",
+    "deductibleItems": ["원재료 구입비", "임차료", "인건비", "일회용품비", "전기/수도", "소모품비"]
+  },
+  {
+    "industryCode": "523111",
+    "industryName": "의류 소매업",
+    "standardRate": 14.0,
+    "simpleRate": 87.4,
+    "category": "소매업",
+    "deductibleItems": ["상품 매입비", "임차료", "인건비", "포장/배송비", "광고/홍보비", "카드 수수료", "인테리어 감가상각비"]
+  },
+  {
+    "industryCode": "521102",
+    "industryName": "슈퍼마켓",
+    "standardRate": 8.1,
+    "simpleRate": 91.4,
+    "category": "소매업",
+    "deductibleItems": ["상품 매입비", "임차료", "인건비", "전기/수도", "포장재비", "카드 수수료", "폐기손실비"]
+  },
+  {
+    "industryCode": "521992",
+    "industryName": "체인화 편의점",
+    "standardRate": 7.0,
+    "simpleRate": 93.7,
+    "category": "소매업",
+    "deductibleItems": ["상품 매입비", "임차료", "인건비", "로열티/가맹비", "전기/수도", "카드 수수료", "폐기손실비"]
+  },
+  {
+    "industryCode": "523600",
+    "industryName": "식품 소매업",
+    "standardRate": 9.7,
+    "simpleRate": 90.7,
+    "category": "소매업",
+    "deductibleItems": ["상품 매입비", "임차료", "인건비", "냉장/냉동 전기료", "포장비", "운반비", "카드 수수료"]
+  },
+  {
+    "industryCode": "523131",
+    "industryName": "전자제품 소매업",
+    "standardRate": 11.2,
+    "simpleRate": 88.8,
+    "category": "소매업",
+    "deductibleItems": ["상품 매입비", "임차료", "인건비", "A/S 비용", "광고/홍보비", "배송비", "카드 수수료"]
+  },
+  {
+    "industryCode": "525101",
+    "industryName": "전자상거래 소매업",
+    "standardRate": 11.0,
+    "simpleRate": 86.5,
+    "category": "소매업",
+    "deductibleItems": ["상품 매입비", "택배/배송비", "플랫폼 수수료", "포장재비", "광고비", "서버/호스팅비", "카드 수수료"]
+  },
+  {
+    "industryCode": "154100",
+    "industryName": "식료품 제조업",
+    "standardRate": 11.4,
+    "simpleRate": 89.9,
+    "category": "제조업",
+    "deductibleItems": ["원재료 구입비", "임차료", "인건비", "전기/수도/가스", "설비 감가상각비", "포장재비", "위생검사 비용"]
+  },
+  {
+    "industryCode": "175000",
+    "industryName": "의류 제조업",
+    "standardRate": 14.6,
+    "simpleRate": 86.6,
+    "category": "제조업",
+    "deductibleItems": ["원부자재 구입비", "임차료", "인건비(봉제 외주비)", "전기/수도", "설비 감가상각비", "운반비"]
+  },
+  {
+    "industryCode": "300000",
+    "industryName": "기계 제조업",
+    "standardRate": 14.4,
+    "simpleRate": 87.0,
+    "category": "제조업",
+    "deductibleItems": ["원재료 구입비", "임차료", "인건비", "전기/수도", "설비 감가상각비", "외주 가공비", "공구/소모품비"]
+  },
+  {
+    "industryCode": "321000",
+    "industryName": "전자부품 제조업",
+    "standardRate": 15.3,
+    "simpleRate": 85.8,
+    "category": "제조업",
+    "deductibleItems": ["원재료 구입비", "임차료", "인건비", "전기/수도", "설비 감가상각비", "연구개발비", "품질검사 비용"]
+  },
+  {
+    "industryCode": "961201",
+    "industryName": "미용업",
+    "standardRate": 19.4,
+    "simpleRate": 86.8,
+    "category": "서비스업",
+    "deductibleItems": ["미용 재료비", "임차료", "인건비", "전기/수도", "설비/인테리어 감가상각비", "소모품비", "교육훈련비"]
+  },
+  {
+    "industryCode": "961101",
+    "industryName": "이용업",
+    "standardRate": 18.5,
+    "simpleRate": 87.3,
+    "category": "서비스업",
+    "deductibleItems": ["이미용 재료비", "임차료", "인건비", "전기/수도", "설비 감가상각비", "소모품비"]
+  },
+  {
+    "industryCode": "960201",
+    "industryName": "세탁업",
+    "standardRate": 16.8,
+    "simpleRate": 87.5,
+    "category": "서비스업",
+    "deductibleItems": ["세제/약품 구입비", "임차료", "인건비", "전기/수도/가스", "장비 감가상각비", "배달/수거 차량비"]
+  },
+  {
+    "industryCode": "922102",
+    "industryName": "가전제품 수리업",
+    "standardRate": 17.3,
+    "simpleRate": 84.9,
+    "category": "서비스업",
+    "deductibleItems": ["부품 구입비", "임차료", "인건비", "전기/수도", "공구/장비비", "차량 유지비"]
+  },
+  {
+    "industryCode": "809001",
+    "industryName": "입시학원",
+    "standardRate": 22.1,
+    "simpleRate": 78.3,
+    "category": "서비스업",
+    "deductibleItems": ["교재/교구 구입비", "임차료", "강사 인건비", "전기/수도", "광고/홍보비", "통신비", "시설 감가상각비"]
+  },
+  {
+    "industryCode": "809003",
+    "industryName": "예체능 학원",
+    "standardRate": 24.5,
+    "simpleRate": 76.8,
+    "category": "서비스업",
+    "deductibleItems": ["교재/교구 구입비", "임차료", "강사 인건비", "전기/수도", "악기/장비 감가상각비", "광고비"]
+  },
+  {
+    "industryCode": "809006",
+    "industryName": "직업훈련 학원",
+    "standardRate": 21.5,
+    "simpleRate": 79.0,
+    "category": "서비스업",
+    "deductibleItems": ["교재/교구 구입비", "임차료", "강사 인건비", "전기/수도", "장비/설비 감가상각비", "실습 재료비"]
+  },
+  {
+    "industryCode": "930101",
+    "industryName": "스포츠 시설 운영업 (헬스장)",
+    "standardRate": 21.0,
+    "simpleRate": 79.5,
+    "category": "서비스업",
+    "deductibleItems": ["운동기구 구입/감가상각비", "임차료", "인건비(트레이너)", "전기/수도", "소모품비", "광고/홍보비", "보험료"]
+  },
+  {
+    "industryCode": "722000",
+    "industryName": "응용 소프트웨어 개발 및 공급업",
+    "standardRate": 23.9,
+    "simpleRate": 72.5,
+    "category": "IT",
+    "deductibleItems": ["인건비(개발자)", "서버/클라우드 비용", "사무실 임차료", "장비 구입/감가상각비", "통신비", "소프트웨어 라이선스비", "교육훈련비"]
+  },
+  {
+    "industryCode": "722005",
+    "industryName": "컴퓨터 프로그래밍 서비스업",
+    "standardRate": 22.8,
+    "simpleRate": 73.2,
+    "category": "IT",
+    "deductibleItems": ["인건비(개발자)", "서버/클라우드 비용", "사무실 임차료", "장비 구입/감가상각비", "통신비", "소프트웨어 라이선스비"]
+  },
+  {
+    "industryCode": "721000",
+    "industryName": "정보처리 및 기타 컴퓨터 운영 관련업",
+    "standardRate": 21.5,
+    "simpleRate": 75.4,
+    "category": "IT",
+    "deductibleItems": ["서버/인프라 비용", "인건비", "사무실 임차료", "전기/통신비", "보안/인증 비용", "장비 감가상각비"]
+  },
+  {
+    "industryCode": "724200",
+    "industryName": "웹사이트 제작 및 관리업 (웹에이전시)",
+    "standardRate": 22.3,
+    "simpleRate": 74.0,
+    "category": "IT",
+    "deductibleItems": ["인건비(디자이너/개발자)", "서버/호스팅 비용", "사무실 임차료", "소프트웨어 라이선스비", "장비비", "통신비", "외주비"]
+  },
+  {
+    "industryCode": "451101",
+    "industryName": "종합 건설업",
+    "standardRate": 16.0,
+    "simpleRate": 90.3,
+    "category": "건설업",
+    "deductibleItems": ["자재 구입비", "외주(하도급) 비용", "인건비(일용직 포함)", "중장비 임차비", "보험료(산재/건설공제)", "안전관리비"]
+  },
+  {
+    "industryCode": "452200",
+    "industryName": "전문 건설업 (토목/건축)",
+    "standardRate": 17.2,
+    "simpleRate": 89.5,
+    "category": "건설업",
+    "deductibleItems": ["자재 구입비", "외주비", "인건비(일용직 포함)", "장비 임차비", "보험료", "안전관리비", "차량 유지비"]
+  },
+  {
+    "industryCode": "451403",
+    "industryName": "실내 건축 및 인테리어업",
+    "standardRate": 18.2,
+    "simpleRate": 88.0,
+    "category": "건설업",
+    "deductibleItems": ["자재/부자재 구입비", "외주비(목공/도배/전기)", "인건비", "차량/운반비", "공구/장비비", "설계/디자인 외주비"]
+  },
+  {
+    "industryCode": "602101",
+    "industryName": "개인택시 운송업",
+    "standardRate": 17.6,
+    "simpleRate": 91.7,
+    "category": "운수업",
+    "deductibleItems": ["유류비", "차량 감가상각비/리스비", "보험료", "차량 수리/정비비", "통신비(내비/콜앱)", "세차비", "카드 수수료"]
+  },
+  {
+    "industryCode": "602301",
+    "industryName": "용달 화물자동차 운송업",
+    "standardRate": 25.8,
+    "simpleRate": 91.6,
+    "category": "운수업",
+    "deductibleItems": ["유류비", "차량 감가상각비/리스비", "보험료", "차량 수리/정비비", "통행료", "하역비", "주차비"]
+  },
+  {
+    "industryCode": "602310",
+    "industryName": "일반 화물자동차 운송업",
+    "standardRate": 23.5,
+    "simpleRate": 91.6,
+    "category": "운수업",
+    "deductibleItems": ["유류비", "차량 감가상각비/리스비", "보험료", "차량 수리/정비비", "통행료", "하역비", "인건비(조수)"]
+  },
+  {
+    "industryCode": "634000",
+    "industryName": "택배업",
+    "standardRate": 19.8,
+    "simpleRate": 88.3,
+    "category": "운수업",
+    "deductibleItems": ["유류비", "차량 감가상각비/리스비", "보험료", "차량 수리/정비비", "통행료", "포장재비", "통신비"]
+  },
+  {
+    "industryCode": "702001",
+    "industryName": "부동산 중개업",
+    "standardRate": 33.5,
+    "simpleRate": 74.7,
+    "category": "부동산업",
+    "deductibleItems": ["사무실 임차료", "인건비", "광고/홍보비", "통신비", "사무용품비", "차량 유지비", "교육비(보수교육)"]
+  },
+  {
+    "industryCode": "701101",
+    "industryName": "주거용 건물 임대업",
+    "standardRate": 41.5,
+    "simpleRate": 42.6,
+    "category": "부동산업",
+    "deductibleItems": ["건물 감가상각비", "수선/유지비", "재산세/종합부동산세", "보험료", "대출이자", "관리비(공용부분)", "중개수수료"]
+  },
+  {
+    "industryCode": "701201",
+    "industryName": "비주거용 건물 임대업 (상가)",
+    "standardRate": 38.7,
+    "simpleRate": 48.3,
+    "category": "부동산업",
+    "deductibleItems": ["건물 감가상각비", "수선/유지비", "재산세/종합부동산세", "보험료", "대출이자", "관리비(공용부분)", "중개수수료"]
+  },
+  {
+    "industryCode": "552201",
+    "industryName": "일반 유흥 주점업",
+    "standardRate": 13.2,
+    "simpleRate": 86.9,
+    "category": "음식점",
+    "deductibleItems": ["주류/음료 매입비", "임차료", "인건비", "전기/수도", "소모품비", "음향/조명 유지비"]
+  },
+  {
+    "industryCode": "552202",
+    "industryName": "무도 유흥 주점업",
+    "standardRate": 15.5,
+    "simpleRate": 85.5,
+    "category": "음식점",
+    "deductibleItems": ["주류/음료 매입비", "임차료", "인건비", "전기/수도", "음향/조명 유지비", "소모품비"]
+  },
+  {
+    "industryCode": "552108",
+    "industryName": "피자/햄버거/샌드위치 음식점업",
+    "standardRate": 10.4,
+    "simpleRate": 89.0,
+    "category": "음식점",
+    "deductibleItems": ["식재료 구입비", "임차료", "인건비", "배달앱 수수료", "포장재비", "가스/전기/수도", "가맹비(프랜차이즈)"]
+  },
+  {
+    "industryCode": "940913",
+    "industryName": "1인 미디어 콘텐츠 창작업 (유튜버)",
+    "standardRate": 27.1,
+    "simpleRate": 64.1,
+    "category": "IT",
+    "deductibleItems": ["촬영 장비 감가상각비", "편집 소프트웨어비", "소품/배경 구입비", "통신비", "교통비", "외주 편집비"]
+  },
+  {
+    "industryCode": "749903",
+    "industryName": "디자인업",
+    "standardRate": 25.8,
+    "simpleRate": 70.5,
+    "category": "IT",
+    "deductibleItems": ["소프트웨어 라이선스비", "인건비", "사무실 임차료", "장비 감가상각비", "인쇄/출력비", "외주비", "교육훈련비"]
+  },
+  {
+    "industryCode": "940909",
+    "industryName": "프리랜서 (기타 자영업)",
+    "standardRate": 27.5,
+    "simpleRate": 64.1,
+    "category": "서비스업",
+    "deductibleItems": ["사무실 임차료", "장비/소프트웨어비", "교통비", "통신비", "교육훈련비", "업무 관련 도서 구입비"]
+  },
+  {
+    "industryCode": "749602",
+    "industryName": "광고대행업",
+    "standardRate": 20.5,
+    "simpleRate": 77.8,
+    "category": "서비스업",
+    "deductibleItems": ["매체비(광고비)", "인건비", "사무실 임차료", "외주 제작비", "소프트웨어비", "통신비", "교통비"]
+  },
+  {
+    "industryCode": "761001",
+    "industryName": "인력파견업",
+    "standardRate": 9.5,
+    "simpleRate": 86.5,
+    "category": "서비스업",
+    "deductibleItems": ["파견 인건비", "사무실 임차료", "관리 인건비", "4대보험 사업자 부담금", "교통비", "교육훈련비"]
+  },
+  {
+    "industryCode": "642001",
+    "industryName": "음식 배달 대행업",
+    "standardRate": 18.0,
+    "simpleRate": 86.0,
+    "category": "운수업",
+    "deductibleItems": ["오토바이/차량 감가상각비", "유류비", "보험료", "차량 수리/정비비", "통신비(앱)", "배달가방 등 소모품비"]
+  },
+  {
+    "industryCode": "930206",
+    "industryName": "필라테스/요가 교습업",
+    "standardRate": 23.0,
+    "simpleRate": 77.5,
+    "category": "서비스업",
+    "deductibleItems": ["기구/소도구 구입비", "임차료", "인건비(강사)", "전기/수도", "소모품비", "광고/홍보비"]
+  },
+  {
+    "industryCode": "922001",
+    "industryName": "자동차 수리업",
+    "standardRate": 15.7,
+    "simpleRate": 87.6,
+    "category": "서비스업",
+    "deductibleItems": ["부품 구입비", "임차료", "인건비", "공구/장비 감가상각비", "전기/수도", "폐기물 처리비", "차량 유지비"]
+  },
+  {
+    "industryCode": "741101",
+    "industryName": "세무사/회계사",
+    "standardRate": 36.2,
+    "simpleRate": 60.3,
+    "category": "서비스업",
+    "deductibleItems": ["사무실 임차료", "직원 인건비", "소프트웨어/전산 비용", "통신비", "교육/연수비", "도서 구입비", "업무 교통비"]
+  },
+  {
+    "industryCode": "741301",
+    "industryName": "법무사/변호사",
+    "standardRate": 38.0,
+    "simpleRate": 57.2,
+    "category": "서비스업",
+    "deductibleItems": ["사무실 임차료", "직원 인건비", "법률 DB/전산 비용", "통신비", "교육/연수비", "도서 구입비"]
+  },
+  {
+    "industryCode": "851102",
+    "industryName": "일반의원 (의사)",
+    "standardRate": 29.0,
+    "simpleRate": 72.4,
+    "category": "서비스업",
+    "deductibleItems": ["의약품/소모품 구입비", "임차료", "간호사/직원 인건비", "의료장비 감가상각비", "전기/수도", "보험료", "전산/EMR 비용"]
+  },
+  {
+    "industryCode": "851201",
+    "industryName": "치과의원",
+    "standardRate": 21.2,
+    "simpleRate": 78.6,
+    "category": "서비스업",
+    "deductibleItems": ["치과 재료비", "임차료", "직원 인건비", "장비 감가상각비", "기공 외주비", "전기/수도", "전산 비용"]
+  },
+  {
+    "industryCode": "851301",
+    "industryName": "한의원",
+    "standardRate": 27.4,
+    "simpleRate": 74.8,
+    "category": "서비스업",
+    "deductibleItems": ["한약재 구입비", "임차료", "직원 인건비", "의료장비 감가상각비", "전기/수도", "소모품비"]
+  },
+  {
+    "industryCode": "851401",
+    "industryName": "약국",
+    "standardRate": 6.8,
+    "simpleRate": 93.4,
+    "category": "소매업",
+    "deductibleItems": ["의약품 매입비", "임차료", "약사보조 인건비", "전기/수도", "조제 소모품비", "전산/수가관리 비용"]
+  },
+  {
+    "industryCode": "523903",
+    "industryName": "반려동물 관련 소매업 (펫샵)",
+    "standardRate": 13.4,
+    "simpleRate": 86.0,
+    "category": "소매업",
+    "deductibleItems": ["사료/용품 매입비", "임차료", "인건비", "전기/수도", "동물 관리비", "위생/소독비"]
+  },
+  {
+    "industryCode": "961402",
+    "industryName": "반려동물 미용업",
+    "standardRate": 20.5,
+    "simpleRate": 83.0,
+    "category": "서비스업",
+    "deductibleItems": ["미용 용품비", "임차료", "인건비", "전기/수도", "장비 감가상각비", "위생/소독비"]
+  },
+  {
+    "industryCode": "523101",
+    "industryName": "종합 소매업 (잡화)",
+    "standardRate": 12.0,
+    "simpleRate": 88.0,
+    "category": "소매업",
+    "deductibleItems": ["상품 매입비", "임차료", "인건비", "전기/수도", "포장비", "카드 수수료", "운반비"]
+  },
+  {
+    "industryCode": "515100",
+    "industryName": "종합 도매업",
+    "standardRate": 9.0,
+    "simpleRate": 91.8,
+    "category": "소매업",
+    "deductibleItems": ["상품 매입비", "임차료(창고 포함)", "인건비", "운반/배송비", "차량 유지비", "카드 수수료"]
+  },
+  {
+    "industryCode": "642003",
+    "industryName": "퀵서비스업",
+    "standardRate": 22.4,
+    "simpleRate": 86.2,
+    "category": "운수업",
+    "deductibleItems": ["오토바이/차량 감가상각비", "유류비", "보험료", "수리/정비비", "통신비", "헬멧/보호장비 구입비"]
+  },
+  {
+    "industryCode": "749301",
+    "industryName": "사진촬영업",
+    "standardRate": 24.1,
+    "simpleRate": 74.2,
+    "category": "서비스업",
+    "deductibleItems": ["카메라/장비 감가상각비", "렌즈/소모품비", "스튜디오 임차료", "편집 소프트웨어비", "인화/출력비", "교통비"]
+  },
+  {
+    "industryCode": "220201",
+    "industryName": "인쇄업",
+    "standardRate": 16.1,
+    "simpleRate": 85.5,
+    "category": "제조업",
+    "deductibleItems": ["용지/잉크 구입비", "임차료", "인건비", "인쇄기 감가상각비", "전기료", "운반비"]
+  },
+  {
+    "industryCode": "361001",
+    "industryName": "가구 제조업",
+    "standardRate": 14.8,
+    "simpleRate": 86.4,
+    "category": "제조업",
+    "deductibleItems": ["목재/원자재 구입비", "임차료(공장)", "인건비", "설비 감가상각비", "전기료", "운반비", "도장/마감 자재비"]
+  },
+  {
+    "industryCode": "552109",
+    "industryName": "배달 전문 음식점업",
+    "standardRate": 10.8,
+    "simpleRate": 89.2,
+    "category": "음식점",
+    "deductibleItems": ["식재료 구입비", "임차료", "인건비", "배달앱 수수료", "포장재비", "가스/전기/수도", "배달 오토바이 유지비"]
+  },
+  {
+    "industryCode": "552110",
+    "industryName": "간이 음식 포장 판매업 (푸드트럭 등)",
+    "standardRate": 11.5,
+    "simpleRate": 88.5,
+    "category": "음식점",
+    "deductibleItems": ["식재료 구입비", "차량/장비 감가상각비", "유류비", "포장재비", "가스/전기", "영업허가 관련 비용"]
+  }
+]
