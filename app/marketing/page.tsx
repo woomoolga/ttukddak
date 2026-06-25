@@ -522,13 +522,11 @@ function MarketingContent() {
                   : `${selectedIndustry} 업종 분석 결과`}
             </p>
             <h2 className="mt-2 text-2xl font-bold tracking-tight">
-              맞춤 마케팅 전략
+              온라인 현황 진단
             </h2>
-            {displayRegion && (
-              <p className="mt-1 text-sm text-muted">
-                {displayRegion} 지역 특성을 반영한 전략입니다
-              </p>
-            )}
+            <p className="mt-1 text-sm text-muted">
+              놓치고 있는 부분을 찾아드립니다
+            </p>
           </div>
 
           {/* 온라인 활동 현황 (biz 파라미터가 있을 때만) */}
@@ -561,28 +559,6 @@ function MarketingContent() {
               )}
             </div>
           )}
-
-          {/* 기존 마케팅 전략 결과 */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            {dummyResults.map((section) => (
-              <div
-                key={section.title}
-                className="rounded-2xl border border-border bg-card p-6"
-              >
-                <h3 className="mb-4 text-lg font-bold">{section.title}</h3>
-                <ul className="space-y-3">
-                  {section.tips.map((tip, i) => (
-                    <li key={i} className="flex gap-3 text-sm text-muted">
-                      <span className="mt-0.5 shrink-0 text-xs font-bold text-brand-orange">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <span className="leading-relaxed">{tip}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
 
           {/* IT 서비스 CTA (biz 없을 때만, biz 있으면 PlatformSection에 포함) */}
           {!bizInfo && (
