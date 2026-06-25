@@ -11,16 +11,16 @@ export default function MobileNav({ items }: MobileNavProps) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="sm:hidden">
+    <div className="relative sm:hidden">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex h-9 w-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-brand-orange-light hover:text-brand-orange"
-        aria-label="메뉴 열기"
+        className="relative z-[60] flex h-10 w-10 items-center justify-center rounded-lg text-muted transition-colors hover:bg-brand-orange-light hover:text-brand-orange active:bg-brand-orange-light"
+        aria-label={open ? "메뉴 닫기" : "메뉴 열기"}
       >
         <svg
-          width="20"
-          height="20"
+          width="22"
+          height="22"
           viewBox="0 0 20 20"
           fill="none"
           stroke="currentColor"
@@ -43,20 +43,26 @@ export default function MobileNav({ items }: MobileNavProps) {
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-14 border-b border-border bg-background/95 backdrop-blur-xl">
-          <nav className="mx-auto max-w-5xl px-5 py-3">
-            {items.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="block rounded-lg px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-brand-orange-light hover:text-brand-orange"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
+        <>
+          <div
+            className="fixed inset-0 z-[55] bg-black/20"
+            onClick={() => setOpen(false)}
+          />
+          <div className="fixed left-0 right-0 top-14 z-[60] border-b border-border bg-background/98 backdrop-blur-xl">
+            <nav className="mx-auto max-w-5xl px-5 py-3">
+              {items.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="block rounded-lg px-3 py-3 text-base font-medium text-muted transition-colors hover:bg-brand-orange-light hover:text-brand-orange active:bg-brand-orange-light"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </>
       )}
     </div>
   );

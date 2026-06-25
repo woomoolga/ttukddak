@@ -72,7 +72,7 @@ export default function Home() {
           <form onSubmit={handleSubmit} className="space-y-3">
             <input
               type="text"
-              inputMode="numeric"
+              inputMode="tel"
               value={bizNumber}
               onChange={handleChange}
               placeholder="000-00-00000"

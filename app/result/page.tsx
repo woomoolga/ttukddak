@@ -482,7 +482,7 @@ function ResultContent() {
         <button
           type="button"
           onClick={() => setShowAllBenefits(true)}
-          className="mt-4 w-full rounded-2xl border border-border bg-card py-4 text-sm font-medium text-muted transition-all hover:border-brand-orange/30 hover:text-foreground"
+          className="mt-4 w-full rounded-2xl border-2 border-brand-orange/40 bg-brand-orange/5 py-5 text-base font-semibold text-brand-orange transition-all hover:bg-brand-orange/10 hover:border-brand-orange active:scale-[0.99] dark:bg-brand-orange/10 dark:hover:bg-brand-orange/20"
         >
           혜택 {benefits.length - 3}건 더보기
         </button>
