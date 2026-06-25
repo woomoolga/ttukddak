@@ -272,10 +272,36 @@ function ResultContent() {
     fetchTaxGuide();
   }, [bizInfo?.industry]);
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const [emailSending, setEmailSending] = useState(false);
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    setEmailSent(true);
+    setEmailSending(true);
+    try {
+      const res = await fetch("/api/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          businessNumber: biz,
+          businessName: bizInfo?.businessName || "",
+          benefits: benefits.map((b) => ({
+            title: b.title,
+            amount: b.amount,
+            deadline: b.deadline,
+            category: b.category,
+          })),
+        }),
+      });
+      if (res.ok) {
+        setEmailSent(true);
+      }
+    } catch {
+      // 실패해도 UI는 유지
+    } finally {
+      setEmailSending(false);
+    }
   };
 
   // 로딩 상태
@@ -551,9 +577,10 @@ function ResultContent() {
               />
               <button
                 type="submit"
-                className="shrink-0 rounded-xl bg-brand-orange px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
+                disabled={emailSending}
+                className="shrink-0 rounded-xl bg-brand-orange px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
               >
-                전송하기
+                {emailSending ? "전송 중..." : "전송하기"}
               </button>
             </form>
           </div>
