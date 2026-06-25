@@ -33,26 +33,23 @@ const features = [
 ];
 
 export default function Home() {
-  const [bizNumber, setBizNumber] = useState("");
+  const [rawDigits, setRawDigits] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const digits = getRawDigits(bizNumber);
-  const isValid = digits.length === 10;
+  const isValid = rawDigits.length === 10;
+  const displayValue = formatBizNumber(rawDigits);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValid) return;
     setIsLoading(true);
-    router.push(`/result?biz=${digits}`);
+    router.push(`/result?biz=${rawDigits}`);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    const digitsOnly = raw.replace(/\D/g, "").slice(0, 10);
-    // 하이픈 포맷팅 시도, 실패하면 숫자만 저장
-    const formatted = formatBizNumber(raw);
-    setBizNumber(formatted || digitsOnly);
+    const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+    setRawDigits(digits);
   };
 
   return (
@@ -76,8 +73,9 @@ export default function Home() {
           <form onSubmit={handleSubmit} className="space-y-3">
             <input
               type="text"
-              inputMode="tel"
-              value={bizNumber}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={displayValue}
               onChange={handleChange}
               placeholder="000-00-00000"
               maxLength={14}
