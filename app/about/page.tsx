@@ -1,3 +1,85 @@
+"use client";
+
+import { useState } from "react";
+
+function ContactForm() {
+  const [name, setName] = useState("");
+  const [contact, setContact] = useState("");
+  const [message, setMessage] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitted(true);
+  };
+
+  if (submitted) {
+    return (
+      <div className="rounded-3xl border border-border bg-card p-8 sm:p-12 text-center">
+        <h2 className="text-xl font-bold">문의가 접수되었습니다</h2>
+        <p className="mt-2 text-sm text-muted">빠르게 확인 후 연락드리겠습니다.</p>
+        <button
+          type="button"
+          onClick={() => { setSubmitted(false); setName(""); setContact(""); setMessage(""); }}
+          className="mt-6 rounded-xl bg-brand-blue px-6 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
+        >
+          돌아가기
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-3xl border border-border bg-card p-8 sm:p-12">
+      <div className="mb-8 text-center">
+        <h2 className="text-2xl font-bold tracking-tight">문의하기</h2>
+        <p className="mt-2 text-muted">궁금한 점이 있으시면 언제든 연락주세요.</p>
+      </div>
+      <form onSubmit={handleSubmit} className="mx-auto max-w-md space-y-4">
+        <div>
+          <label className="mb-1.5 block text-sm font-semibold">이름</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            placeholder="홍길동"
+            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm transition-all placeholder:text-muted/50 focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
+          />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-sm font-semibold">연락처 (전화 또는 이메일)</label>
+          <input
+            type="text"
+            value={contact}
+            onChange={(e) => setContact(e.target.value)}
+            required
+            placeholder="010-1234-5678 또는 email@example.com"
+            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm transition-all placeholder:text-muted/50 focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
+          />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-sm font-semibold">문의 내용</label>
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            required
+            rows={5}
+            placeholder="궁금한 점을 자유롭게 적어주세요."
+            className="w-full resize-none rounded-xl border border-border bg-background px-4 py-3 text-sm transition-all placeholder:text-muted/50 focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
+          />
+        </div>
+        <button
+          type="submit"
+          className="w-full rounded-2xl bg-brand-orange px-5 py-4 text-base font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
+        >
+          문의하기
+        </button>
+      </form>
+    </div>
+  );
+}
+
 export default function AboutPage() {
   const values = [
     {
@@ -73,34 +155,18 @@ export default function AboutPage() {
         </p>
       </div>
 
-      {/* Contact */}
-      <div className="rounded-3xl border border-border bg-card p-8 sm:p-12">
-        <div className="mb-8 text-center">
-          <h2 className="text-2xl font-bold tracking-tight">문의하기</h2>
-          <p className="mt-2 text-muted">
-            궁금한 점이 있으시면 언제든 연락주세요.
-          </p>
-        </div>
-        <div className="mx-auto grid max-w-md gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border border-border bg-background p-6 text-center">
-            <p className="mb-1 text-sm text-muted">이메일</p>
-            <a
-              href="mailto:admin@ch360.org"
-              className="text-base font-semibold text-brand-blue transition-colors hover:text-brand-orange"
-            >
-              admin@ch360.org
-            </a>
-          </div>
-          <div className="rounded-2xl border border-border bg-background p-6 text-center">
-            <p className="mb-1 text-sm text-muted">전화</p>
-            <a
-              href="tel:042-123-4567"
-              className="text-base font-semibold text-brand-blue transition-colors hover:text-brand-orange"
-            >
-              042-123-4567
-            </a>
-          </div>
-        </div>
+      {/* Contact Form */}
+      <ContactForm />
+
+      {/* Phone */}
+      <div className="mt-8 text-center">
+        <p className="text-sm text-muted">전화 문의</p>
+        <a
+          href="tel:010-4636-4626"
+          className="text-lg font-semibold text-brand-blue transition-colors hover:text-brand-orange"
+        >
+          010-4636-4626
+        </a>
       </div>
     </div>
   );
