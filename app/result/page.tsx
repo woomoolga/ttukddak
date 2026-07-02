@@ -1,8 +1,21 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import AdUnit from "@/app/components/AdUnit";
+
+declare global {
+  interface Window {
+    Kakao?: {
+      init: (key: string) => void;
+      isInitialized: () => boolean;
+      Share: {
+        sendDefault: (options: Record<string, unknown>) => void;
+      };
+    };
+  }
+}
 
 interface BusinessInfo {
   businessNumber: string;
@@ -34,157 +47,109 @@ interface TaxGuideResponse {
   message?: string;
 }
 
-// 업종/지역별 혜택 데이터 (나중에 기업마당 API 연동)
 interface Benefit {
-  id: number;
-  category: string;
+  id: string;
   title: string;
-  amount: string;
-  eligibility: string;
+  category: string;
+  organization: string;
+  target: string;
+  summary: string;
+  startDate: string;
   deadline: string;
   dDay: number | null;
-  description: string;
+  detailUrl: string;
 }
 
-// 공통 혜택 (모든 사업자)
-const COMMON_BENEFITS: Benefit[] = [
-  {
-    id: 100,
-    category: "세금 혜택",
-    title: "중소기업 특별세액감면",
-    amount: "법인세 최대 30% 감면",
-    eligibility: "중소기업기본법상 중소기업",
-    deadline: "2026-12-31",
-    dDay: 189,
-    description: "중소기업이 감면 대상 업종을 영위하는 경우 법인세 또는 소득세를 감면받을 수 있습니다.",
-  },
-  {
-    id: 101,
-    category: "정부지원금",
-    title: "청년 추가고용 장려금",
-    amount: "1인당 연 900만원 (3년간)",
-    eligibility: "청년 정규직 신규 채용 기업",
-    deadline: "2026-08-15",
-    dDay: 51,
-    description: "만 15~34세 청년을 정규직으로 신규 채용한 중소기업에 인건비를 지원합니다.",
-  },
-  {
-    id: 102,
-    category: "정부지원금",
-    title: "중소기업 디지털 전환 지원사업",
-    amount: "최대 3,000만원",
-    eligibility: "매출 100억 이하 중소기업",
-    deadline: "2026-07-31",
-    dDay: 36,
-    description: "클라우드, AI, 데이터 분석 등 디지털 기술 도입 비용의 50%를 지원합니다.",
-  },
-];
-
-// 업종별 혜택
-const INDUSTRY_BENEFITS: Record<string, Benefit[]> = {
-  "제조업": [
-    { id: 201, category: "정부지원금", title: "스마트공장 구축 지원사업", amount: "최대 1억원 (50% 매칭)", eligibility: "제조업 중소기업", deadline: "2026-09-30", dDay: 97, description: "생산 공정에 IoT, AI, 빅데이터 등 스마트 기술을 도입하는 제조기업에 구축 비용을 지원합니다." },
-    { id: 202, category: "인증/인허가", title: "ISO 인증 취득 지원", amount: "인증 비용 70% 지원 (최대 500만원)", eligibility: "제조업 중소기업", deadline: "상시 접수", dDay: null, description: "ISO 9001, 14001 등 국제 품질/환경 인증 취득에 필요한 컨설팅 및 심사 비용을 지원합니다." },
-    { id: 203, category: "마케팅 지원", title: "수출바우처 사업", amount: "최대 1억원 바우처", eligibility: "수출 실적 또는 수출 계획 보유 제조기업", deadline: "2026-09-30", dDay: 97, description: "해외 마케팅, 통번역, 디자인, 법률자문 등 수출에 필요한 서비스를 바우처로 이용할 수 있습니다." },
-  ],
-  "음식점": [
-    { id: 211, category: "정부지원금", title: "소상공인 배달·O2O 지원사업", amount: "최대 200만원", eligibility: "배달앱 입점 소상공인", deadline: "2026-08-31", dDay: 67, description: "배달앱 입점비, 포장재, 메뉴 사진 촬영 등 온라인 판로 개척 비용을 지원합니다." },
-    { id: 212, category: "위생/안전", title: "음식점 위생등급제 인센티브", amount: "위생등급 취득 시 행정 혜택", eligibility: "일반음식점, 휴게음식점", deadline: "상시 접수", dDay: null, description: "식약처 위생등급(매우우수/우수) 취득 시 위생점검 면제, 융자 우대 등 혜택을 받을 수 있습니다." },
-    { id: 213, category: "세금 혜택", title: "음식점업 부가세 간이과세 특례", amount: "부가세 감면", eligibility: "연매출 1억 400만원 미만 음식점", deadline: "2026-12-31", dDay: 189, description: "간이과세 적용 시 부가가치세 부담이 크게 줄어들며, 세금계산서 발행 의무도 면제됩니다." },
-  ],
-  "소매": [
-    { id: 221, category: "정부지원금", title: "전통시장·상점가 활성화 지원", amount: "최대 5,000만원", eligibility: "전통시장 및 상점가 소속 소매업자", deadline: "2026-07-31", dDay: 36, description: "시설 현대화, 공동마케팅, 경영혁신 등 전통시장 활성화를 위한 사업비를 지원합니다." },
-    { id: 222, category: "마케팅 지원", title: "소상공인 온라인 판로 지원사업", amount: "입점비·수수료 지원 (최대 300만원)", eligibility: "소매업 소상공인", deadline: "2026-10-31", dDay: 128, description: "네이버 스마트스토어, 쿠팡 등 온라인 마켓플레이스 입점 및 운영에 필요한 비용을 지원합니다." },
-  ],
-  "IT": [
-    { id: 231, category: "인증/인허가", title: "벤처기업 인증", amount: "세금 감면 + 금융 우대", eligibility: "기술성 평가 우수 IT 기업", deadline: "상시 접수", dDay: null, description: "벤처기업 인증을 받으면 법인세 감면, 취득세 면제, 정책자금 우대 등 다양한 혜택을 받을 수 있습니다." },
-    { id: 232, category: "정부지원금", title: "초기창업패키지", amount: "최대 1억원 (1년)", eligibility: "창업 3년 이내 IT/기술 기업", deadline: "2026-08-15", dDay: 51, description: "사업화 자금, 멘토링, 사무공간 등 초기 창업에 필요한 종합 패키지를 지원합니다." },
-    { id: 233, category: "정부지원금", title: "클라우드 서비스 이용 지원", amount: "최대 400만원 (70% 지원)", eligibility: "IT 중소기업·스타트업", deadline: "2026-09-30", dDay: 97, description: "AWS, GCP, Azure 등 클라우드 서비스 이용료를 지원하여 인프라 비용 부담을 줄여줍니다." },
-  ],
-  "교육": [
-    { id: 241, category: "정부지원금", title: "직업훈련기관 시설·장비 지원", amount: "최대 2억원", eligibility: "직업훈련기관, 학원", deadline: "2026-07-31", dDay: 36, description: "직업훈련 시설 개보수 및 교육 장비 구입 비용을 지원합니다." },
-    { id: 242, category: "세금 혜택", title: "교육서비스업 부가세 면제", amount: "부가가치세 면제", eligibility: "학원법상 등록 학원", deadline: "상시 적용", dDay: null, description: "교육용역에 대한 부가가치세가 면제되어 수강료에 부가세를 포함하지 않아도 됩니다." },
-  ],
-  "건설": [
-    { id: 251, category: "정부지원금", title: "건설업 안전관리비 지원", amount: "공사금액의 일정 비율", eligibility: "건설업 등록 기업", deadline: "상시 적용", dDay: null, description: "산업안전보건법에 따라 건설 현장 안전시설 설치, 보호장구 구입 등에 안전관리비를 사용할 수 있습니다." },
-    { id: 252, category: "인증/인허가", title: "건설업 시공능력평가 가점", amount: "기술개발 투자 시 가점", eligibility: "건설업 등록 중소기업", deadline: "2026-12-31", dDay: 189, description: "기술개발 투자, 사회공헌 실적 등을 통해 시공능력평가 순위를 높일 수 있습니다." },
-  ],
+// 지역 키워드 추출 (주소에서 시/도 단위 → 약칭 반환)
+const REGION_MAP: Record<string, string> = {
+  "서울특별시": "서울", "서울": "서울",
+  "부산광역시": "부산", "부산": "부산",
+  "대구광역시": "대구", "대구": "대구",
+  "인천광역시": "인천", "인천": "인천",
+  "광주광역시": "광주", "광주": "광주",
+  "대전광역시": "대전", "대전": "대전",
+  "울산광역시": "울산", "울산": "울산",
+  "세종특별자치시": "세종", "세종": "세종",
+  "경기도": "경기", "경기": "경기",
+  "강원특별자치도": "강원", "강원도": "강원", "강원": "강원",
+  "충청북도": "충북", "충북": "충북",
+  "충청남도": "충남", "충남": "충남",
+  "전북특별자치도": "전북", "전라북도": "전북", "전북": "전북",
+  "전라남도": "전남", "전남": "전남",
+  "경상북도": "경북", "경북": "경북",
+  "경상남도": "경남", "경남": "경남",
+  "제주특별자치도": "제주", "제주": "제주",
 };
+function extractRegion(address: string): string {
+  if (!address) return "";
+  for (const [full, short] of Object.entries(REGION_MAP)) {
+    if (address.startsWith(full)) return short;
+  }
+  return "";
+}
 
-// 지역별 혜택
-const REGION_BENEFITS: Record<string, Benefit[]> = {
-  "경상남도": [
-    { id: 301, category: "지자체 지원", title: "경남 소상공인 경영안정자금", amount: "최대 5,000만원 (저금리 대출)", eligibility: "경상남도 소재 소상공인", deadline: "2026-11-30", dDay: 158, description: "경남 소재 소상공인에게 경영안정을 위한 저금리 정책자금을 융자 지원합니다." },
-    { id: 302, category: "지자체 지원", title: "경남 청년 창업 지원사업", amount: "최대 3,000만원", eligibility: "만 39세 이하 경남 소재 창업자", deadline: "2026-08-31", dDay: 67, description: "경남 지역 청년 창업자에게 사업화 자금, 멘토링, 교육을 지원합니다." },
-  ],
-  "서울": [
-    { id: 311, category: "지자체 지원", title: "서울시 소상공인 디지털 전환 지원", amount: "최대 500만원", eligibility: "서울 소재 소상공인", deadline: "2026-09-30", dDay: 97, description: "키오스크 도입, 배달앱 연동, POS 시스템 등 디지털 전환 비용을 지원합니다." },
-    { id: 312, category: "지자체 지원", title: "서울 신기술 창업사관학교", amount: "사무공간 + 최대 1억원", eligibility: "서울 소재 기술 창업기업", deadline: "2026-07-31", dDay: 36, description: "마포구 소재 창업보육센터 입주 + 사업화 자금 + 전문 멘토링을 제공합니다." },
-  ],
-  "대전": [
-    { id: 321, category: "지자체 지원", title: "대전 강소기업 육성 지원", amount: "최대 2,000만원", eligibility: "대전 소재 중소기업", deadline: "2026-10-31", dDay: 128, description: "기술개발, 마케팅, 인력양성 등 강소기업 성장에 필요한 사업비를 지원합니다." },
-    { id: 322, category: "지자체 지원", title: "대전 소상공인 폐업 재기 지원", amount: "최대 200만원 + 컨설팅", eligibility: "대전 소재 폐업/재기 소상공인", deadline: "상시 접수", dDay: null, description: "폐업 소상공인의 재취업 또는 재창업을 위한 자금 및 전문 컨설팅을 지원합니다." },
-  ],
-  "경기도": [
-    { id: 331, category: "지자체 지원", title: "경기도 중소기업 판로 지원사업", amount: "전시회 참가비 (최대 1,000만원)", eligibility: "경기도 소재 중소기업", deadline: "2026-08-31", dDay: 67, description: "국내외 전시회, 박람회 참가 비용 및 온라인 판로 개척 비용을 지원합니다." },
-    { id: 332, category: "지자체 지원", title: "경기 청년 일자리 장려금", amount: "월 40만원 (6개월)", eligibility: "경기도 소재 중소기업", deadline: "2026-12-31", dDay: 189, description: "경기도 소재 중소기업이 청년을 정규직으로 채용 시 인건비를 보조합니다." },
-  ],
+// 혜택 제목의 [지역] 태그가 사업자 지역과 맞는지 필터링
+// [경북] 혜택은 경남 사업자에게 안 보이고, 지역 태그 없는 전국 혜택은 유지
+const REGIONS = ["서울","부산","대구","인천","광주","대전","울산","세종","경기","강원","충북","충남","전북","전남","경북","경남","제주"];
+// 지역명 정식↔약칭 매핑 (제목 본문 검사용)
+const REGION_FULL: Record<string, string> = {
+  "서울": "서울", "부산": "부산", "대구": "대구", "인천": "인천",
+  "광주": "광주", "대전": "대전", "울산": "울산", "세종": "세종",
+  "경기": "경기", "강원": "강원", "충북": "충북", "충남": "충남",
+  "전북": "전북", "전남": "전남", "경북": "경북", "경남": "경남", "제주": "제주",
+  "경상북": "경북", "경상남": "경남", "충청북": "충북", "충청남": "충남",
+  "전라북": "전북", "전라남": "전남",
 };
+function isRegionMatch(benefit: Benefit, bizRegion: string, bizAddress?: string): boolean {
+  if (!bizRegion) return true;
+  const title = benefit.title;
 
-function getBenefitsForBusiness(info: BusinessInfo | null): Benefit[] {
-  if (!info) return COMMON_BENEFITS;
+  // 1) [지역] 태그 검사
+  const tagMatch = title.match(/^\[([^\]]+)\]/);
+  if (tagMatch && REGIONS.includes(tagMatch[1])) {
+    if (tagMatch[1] !== bizRegion) return false;
 
-  const benefits: Benefit[] = [...COMMON_BENEFITS];
-
-  // 업종 매칭
-  const industry = info.industry || "";
-  if (industry.includes("제조")) {
-    benefits.push(...(INDUSTRY_BENEFITS["제조업"] || []));
-  } else if (industry.includes("음식") || industry.includes("식품") || industry.includes("요식")) {
-    benefits.push(...(INDUSTRY_BENEFITS["음식점"] || []));
-  } else if (industry.includes("소매") || industry.includes("도매") || industry.includes("유통") || industry.includes("판매")) {
-    benefits.push(...(INDUSTRY_BENEFITS["소매"] || []));
-  } else if (industry.includes("소프트웨어") || industry.includes("정보") || industry.includes("IT") || industry.includes("컴퓨터") || industry.includes("프로그램")) {
-    benefits.push(...(INDUSTRY_BENEFITS["IT"] || []));
-  } else if (industry.includes("교육") || industry.includes("학원") || industry.includes("훈련")) {
-    benefits.push(...(INDUSTRY_BENEFITS["교육"] || []));
-  } else if (industry.includes("건설") || industry.includes("건축") || industry.includes("인테리어")) {
-    benefits.push(...(INDUSTRY_BENEFITS["건설"] || []));
+    // 같은 시/도 내에서 시/군 특정 공고면 내 시/군과 비교
+    if (bizAddress) {
+      const afterTag = title.slice(tagMatch[0].length).trim();
+      const cityMatch = afterTag.match(/^([\w가-힣]+[시군구])\s*[·,\s]/);
+      if (cityMatch) {
+        const bizCity = bizAddress.match(/[시도]\s+([\w가-힣]+[시군구])/);
+        if (bizCity && !afterTag.includes(bizCity[1])) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
-  // 지역 매칭
-  const address = info.address || "";
-  if (address.includes("경상남도")) {
-    benefits.push(...(REGION_BENEFITS["경상남도"] || []));
-  } else if (address.includes("서울")) {
-    benefits.push(...(REGION_BENEFITS["서울"] || []));
-  } else if (address.includes("대전")) {
-    benefits.push(...(REGION_BENEFITS["대전"] || []));
-  } else if (address.includes("경기")) {
-    benefits.push(...(REGION_BENEFITS["경기도"] || []));
+  // 2) 제목 본문에 타 지역 시/도명 패턴 검사
+  for (const [keyword, short] of Object.entries(REGION_FULL)) {
+    if (short === bizRegion) continue;
+    if (new RegExp(`(^|\\s|\\[)${keyword}(도|특별시|광역시|시)?\\s`).test(title)) {
+      return false;
+    }
   }
 
-  // 마감일순 정렬 (상시 접수는 마지막)
-  benefits.sort((a, b) => {
-    if (a.dDay === null && b.dDay === null) return 0;
-    if (a.dDay === null) return 1;
-    if (b.dDay === null) return -1;
-    return a.dDay - b.dDay;
-  });
-
-  return benefits;
+  return true;
 }
 
 function getCategoryColor(category: string): string {
   switch (category) {
-    case "정부지원금":
+    case "금융":
       return "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300";
-    case "세금 혜택":
-      return "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300";
-    case "인증/인허가":
+    case "기술":
       return "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300";
-    case "마케팅 지원":
+    case "인력":
+      return "bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300";
+    case "수출":
+      return "bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300";
+    case "내수":
       return "bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300";
+    case "창업":
+      return "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300";
+    case "경영":
+      return "bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300";
     default:
       return "bg-gray-50 text-gray-700 dark:bg-gray-900 dark:text-gray-300";
   }
@@ -195,21 +160,114 @@ function ResultContent() {
   const biz = searchParams.get("biz") || "";
 
   const [bizInfo, setBizInfo] = useState<BusinessInfo | null>(null);
+  const [benefits, setBenefits] = useState<Benefit[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [benefitsLoading, setBenefitsLoading] = useState(false);
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showAllBenefits, setShowAllBenefits] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const [taxGuide, setTaxGuide] = useState<TaxGuideResponse | null>(null);
   const [taxGuideLoading, setTaxGuideLoading] = useState(false);
 
-  const benefits = getBenefitsForBusiness(bizInfo);
+  // 추가 데이터 소스
+  const [subsidies, setSubsidies] = useState<Benefit[]>([]);
+  const [subsidiesLoading, setSubsidiesLoading] = useState(false);
+  const [smesNotices, setSmesNotices] = useState<Benefit[]>([]);
+  const [smesLoading, setSmesLoading] = useState(false);
+  const [procurements, setProcurements] = useState<Benefit[]>([]);
+  const [procurementsLoading, setProcurementsLoading] = useState(false);
+
+  const [copyToast, setCopyToast] = useState(false);
+  const [kakaoReady, setKakaoReady] = useState(false);
+
+  // Kakao SDK 로드 및 초기화
+  useEffect(() => {
+    const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
+    if (!kakaoKey) return;
+    if (window.Kakao?.isInitialized?.()) {
+      setKakaoReady(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js";
+    script.async = true;
+    script.onload = () => {
+      if (window.Kakao && !window.Kakao.isInitialized()) {
+        window.Kakao.init(kakaoKey);
+        setKakaoReady(true);
+      }
+    };
+    document.head.appendChild(script);
+  }, []);
+
+  const handleCopyLink = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopyToast(true);
+      setTimeout(() => setCopyToast(false), 2000);
+    } catch {
+      // fallback
+      const input = document.createElement("input");
+      input.value = window.location.href;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+      setCopyToast(true);
+      setTimeout(() => setCopyToast(false), 2000);
+    }
+  }, []);
+
+  const handleKakaoShare = useCallback((count: number) => {
+    if (!window.Kakao?.Share) return;
+    window.Kakao.Share.sendDefault({
+      objectType: "feed",
+      content: {
+        title: `내 사업자 맞춤 혜택 ${count}건 발견!`,
+        description: "사업자번호 하나로 정부지원금, 세금 혜택, 보조금까지 무료 조회",
+        imageUrl: "https://ttukddak.woomoolga.com/og-image.jpg",
+        link: {
+          mobileWebUrl: window.location.href,
+          webUrl: window.location.href,
+        },
+      },
+      buttons: [
+        {
+          title: "혜택 확인하기",
+          link: {
+            mobileWebUrl: window.location.href,
+            webUrl: window.location.href,
+          },
+        },
+      ],
+    });
+  }, []);
+
+  const isClosed = bizInfo?.status === "폐업자";
+  const isSuspended = bizInfo?.status === "휴업자";
+
+  // 공공기관/지자체/비영리 등 혜택 대상이 아닌 사업자
+  const taxType = bizInfo?.taxType || "";
+  const isNonEligible =
+    taxType.includes("국가") ||
+    taxType.includes("지방자치") ||
+    taxType.includes("비영리") ||
+    (taxType.includes("면세") &&
+      (bizInfo?.industry?.includes("공공") ||
+        bizInfo?.industry?.includes("행정") ||
+        bizInfo?.industry?.includes("지방자치")));
+
+  const showBenefits = !isClosed && !isNonEligible;
 
   const formatted = biz
     ? `${biz.slice(0, 3)}-${biz.slice(3, 5)}-${biz.slice(5)}`
     : "";
 
+  // 사업자 정보 조회
   useEffect(() => {
     if (!biz || biz.length !== 10) {
       setError("올바른 사업자등록번호를 입력해주세요.");
@@ -235,9 +293,16 @@ function ResultContent() {
         }
 
         const data: BusinessInfo = await res.json();
+        if (!data.businessName && !data.status) {
+          setError("해당 사업자등록번호로 등록된 기업을 찾을 수 없습니다. 번호를 다시 확인해주세요.");
+          setLoading(false);
+          return;
+        }
         setBizInfo(data);
       } catch {
-        setError("서버와 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        setError(
+          "서버와 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+        );
       } finally {
         setLoading(false);
       }
@@ -245,6 +310,89 @@ function ResultContent() {
 
     fetchData();
   }, [biz]);
+
+  // 기업마당 API로 실제 혜택 조회
+  useEffect(() => {
+    if (!bizInfo || isClosed || isNonEligible) return;
+
+    const fetchBenefits = async () => {
+      setBenefitsLoading(true);
+      try {
+        const industry = bizInfo.industry || "";
+        const region = extractRegion(bizInfo.address || "");
+
+        const params = new URLSearchParams({ limit: "20", page: "1" });
+        if (industry) params.set("industry", industry);
+        if (region) params.set("region", region);
+
+        const res = await fetch(`/api/benefits?${params.toString()}`);
+        if (res.ok) {
+          const data = await res.json();
+          // 마감 공고 + 타 지역 공고 필터링
+          const active = (data.benefits || []).filter(
+            (b: Benefit) => (b.dDay === null || b.dDay >= 0) && isRegionMatch(b, region, bizInfo?.address)
+          );
+          setBenefits(active);
+          setTotalCount(data.totalCount || 0);
+        }
+      } catch {
+        // 혜택 조회 실패해도 사업자 정보는 유지
+      } finally {
+        setBenefitsLoading(false);
+      }
+    };
+
+    fetchBenefits();
+  }, [bizInfo, isClosed, isNonEligible]);
+
+  // 추가 데이터 소스 병렬 조회 (보조금24, 중소벤처24, 내일배움카드, 나라장터)
+  useEffect(() => {
+    if (!bizInfo || isClosed || isNonEligible) return;
+    const industry = bizInfo.industry || "";
+    const region = extractRegion(bizInfo.address || "");
+
+    // 보조금24
+    (async () => {
+      setSubsidiesLoading(true);
+      try {
+        const p = new URLSearchParams({ limit: "20" });
+        if (industry) p.set("keyword", industry);
+        const res = await fetch(`/api/benefits-subsidy?${p}`);
+        if (res.ok) {
+          const data = await res.json();
+          setSubsidies((data.benefits || []).filter((b: Benefit) => isRegionMatch(b, region, bizInfo?.address)));
+        }
+      } catch { /* 실패해도 무시 */ } finally { setSubsidiesLoading(false); }
+    })();
+
+    // 중소벤처24
+    (async () => {
+      setSmesLoading(true);
+      try {
+        const res = await fetch("/api/benefits-smes?limit=20");
+        if (res.ok) {
+          const data = await res.json();
+          setSmesNotices((data.benefits || []).filter((b: Benefit) =>
+            (b.dDay === null || b.dDay >= 0) && isRegionMatch(b, region, bizInfo?.address)
+          ));
+        }
+      } catch { /* 실패해도 무시 */ } finally { setSmesLoading(false); }
+    })();
+
+    // 나라장터 입찰
+    (async () => {
+      setProcurementsLoading(true);
+      try {
+        const p = new URLSearchParams({ limit: "10" });
+        if (industry) p.set("keyword", industry);
+        const res = await fetch(`/api/benefits-procurement?${p}`);
+        if (res.ok) {
+          const data = await res.json();
+          setProcurements(data.benefits || []);
+        }
+      } catch { /* 실패해도 무시 */ } finally { setProcurementsLoading(false); }
+    })();
+  }, [bizInfo, isClosed, isNonEligible]);
 
   // 절세 가이드 조회
   useEffect(() => {
@@ -272,6 +420,38 @@ function ResultContent() {
     fetchTaxGuide();
   }, [bizInfo?.industry]);
 
+  // 더보기 (다음 페이지 로드)
+  const loadMore = async () => {
+    if (!bizInfo) return;
+    const nextPage = currentPage + 1;
+    setBenefitsLoading(true);
+    try {
+      const industry = bizInfo.industry || "";
+      const region = extractRegion(bizInfo.address || "");
+
+      const params = new URLSearchParams({
+        limit: "20",
+        page: String(nextPage),
+      });
+      if (industry) params.set("industry", industry);
+      if (region) params.set("region", region);
+
+      const res = await fetch(`/api/benefits?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        const active = (data.benefits || []).filter(
+          (b: Benefit) => (b.dDay === null || b.dDay >= 0) && isRegionMatch(b, region, bizInfo?.address)
+        );
+        setBenefits((prev) => [...prev, ...active]);
+        setCurrentPage(nextPage);
+      }
+    } catch {
+      // 실패 시 무시
+    } finally {
+      setBenefitsLoading(false);
+    }
+  };
+
   const [emailSending, setEmailSending] = useState(false);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -288,9 +468,9 @@ function ResultContent() {
           businessName: bizInfo?.businessName || "",
           benefits: benefits.map((b) => ({
             title: b.title,
-            amount: b.amount,
-            deadline: b.deadline,
             category: b.category,
+            deadline: b.deadline,
+            organization: b.organization,
           })),
         }),
       });
@@ -365,6 +545,9 @@ function ResultContent() {
     { label: "종업원수", value: bizInfo?.employeeCount },
   ].filter((item) => item.value);
 
+  const displayBenefits = showAllBenefits ? benefits : benefits.slice(0, 5);
+  const hasMore = benefits.length < totalCount;
+
   return (
     <div className="mx-auto max-w-5xl px-5 py-10 sm:py-16">
       {/* Back */}
@@ -376,7 +559,7 @@ function ResultContent() {
       </Link>
 
       {/* Biz Info Card */}
-      <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
+      <div className={`rounded-2xl border p-6 sm:p-8 ${isClosed ? "border-red-400 bg-card dark:border-red-700" : "border-border bg-card"}`}>
         <div className="flex flex-col gap-5">
           {/* 상단: 사업자번호 + 사업자명 */}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -384,12 +567,19 @@ function ResultContent() {
               <p className="text-xs font-medium text-muted">사업자번호</p>
               <p className="text-lg font-bold tracking-wider">{formatted}</p>
             </div>
-            {bizInfo?.businessName && (
-              <div className="sm:text-right">
-                <p className="text-xs font-medium text-muted">사업자명</p>
-                <p className="text-lg font-bold">{bizInfo.businessName}</p>
-              </div>
-            )}
+            <div className="flex items-center gap-3 sm:text-right">
+              {isClosed && (
+                <span className="rounded-lg bg-red-100 px-3 py-1 text-xs font-bold text-red-700 dark:bg-red-950 dark:text-red-400">
+                  폐업
+                </span>
+              )}
+              {bizInfo?.businessName && (
+                <div>
+                  <p className="text-xs font-medium text-muted">사업자명</p>
+                  <p className="text-lg font-bold">{bizInfo.businessName}</p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* 상세 정보 그리드 */}
@@ -428,106 +618,399 @@ function ResultContent() {
         </div>
       </div>
 
+      {/* 폐업 안내 */}
+      {isClosed && (
+        <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-8 text-center dark:border-red-900 dark:bg-red-950">
+          <p className="text-lg font-bold text-red-700 dark:text-red-300">
+            이 사업자는 현재 폐업 상태입니다
+          </p>
+          <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+            폐업된 사업자는 혜택 조회 대상이 아닙니다.
+          </p>
+          <Link
+            href="/"
+            className="mt-6 inline-block rounded-xl bg-brand-blue px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
+          >
+            다른 사업자 조회하기
+          </Link>
+        </div>
+      )}
+
+      {/* 휴업 안내 */}
+      {isSuspended && !isClosed && (
+        <div className="mt-8 rounded-2xl border border-yellow-200 bg-yellow-50 p-6 text-center dark:border-yellow-900 dark:bg-yellow-950">
+          <p className="text-base font-bold text-yellow-700 dark:text-yellow-300">
+            이 사업자는 현재 휴업 상태입니다
+          </p>
+          <p className="mt-1 text-sm text-yellow-600 dark:text-yellow-400">
+            일부 혜택은 휴업 중 신청이 불가할 수 있습니다.
+          </p>
+        </div>
+      )}
+
+      {/* 공공기관/비대상 안내 */}
+      {isNonEligible && !isClosed && (
+        <div className="mt-8 rounded-2xl border border-border bg-surface p-8 text-center">
+          <p className="text-lg font-bold">
+            해당 사업자는 혜택 조회 대상이 아닙니다
+          </p>
+          <p className="mt-2 text-sm text-muted">
+            공공기관, 지방자치단체, 비영리법인 등은 중소기업·소상공인 지원 혜택
+            대상에 포함되지 않습니다.
+          </p>
+          <Link
+            href="/"
+            className="mt-6 inline-block rounded-xl bg-brand-blue px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
+          >
+            다른 사업자 조회하기
+          </Link>
+        </div>
+      )}
+
+      {/* 혜택 로딩 */}
+      {showBenefits && benefitsLoading && benefits.length === 0 && (
+        <div className="mt-8 flex flex-col items-center justify-center py-12 space-y-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-orange border-t-transparent" />
+          <p className="text-sm text-muted">
+            맞춤 지원사업을 검색하고 있습니다...
+          </p>
+        </div>
+      )}
+
+      {/* 혜택 없음 */}
+      {showBenefits &&
+        !benefitsLoading &&
+        benefits.length === 0 && (
+          <div className="mt-8 rounded-2xl border border-border bg-surface p-8 text-center">
+            <p className="text-lg font-bold">
+              현재 신청 가능한 지원사업이 없습니다
+            </p>
+            <p className="mt-2 text-sm text-muted">
+              업종과 지역에 맞는 새로운 공고가 등록되면 다시 확인해주세요.
+            </p>
+          </div>
+        )}
+
+      {/* Share Toolbar */}
+      {showBenefits && benefits.length > 0 && (
+        <div className="mt-8 flex items-center gap-2 print:hidden">
+          <button
+            type="button"
+            onClick={handleCopyLink}
+            className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-brand-orange/30 hover:bg-card-hover active:scale-[0.97]"
+          >
+            링크 복사
+          </button>
+          {kakaoReady && (
+            <button
+              type="button"
+              onClick={() => handleKakaoShare(benefits.length + subsidies.length + smesNotices.length)}
+              className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-brand-orange/30 hover:bg-card-hover active:scale-[0.97]"
+            >
+              카카오톡 공유
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-brand-orange/30 hover:bg-card-hover active:scale-[0.97]"
+          >
+            PDF 저장
+          </button>
+        </div>
+      )}
+
+      {/* Copy Toast */}
+      {copyToast && (
+        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-xl bg-foreground px-5 py-3 text-sm font-medium text-background shadow-lg print:hidden">
+          복사됨!
+        </div>
+      )}
+
       {/* Summary */}
-      <div className="mt-8 mb-6 flex items-baseline justify-between">
-        <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
-          받을 수 있는 혜택{" "}
-          <span className="text-brand-orange">{benefits.length}건</span>
-        </h1>
-        <p className="text-xs text-muted">마감일순 정렬</p>
-      </div>
+      {showBenefits && benefits.length > 0 && (
+        <div className="mt-6 mb-6 flex items-baseline justify-between">
+          <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
+            신청 가능한 지원사업{" "}
+            <span className="text-brand-orange">{benefits.length}건</span>
+            {totalCount > benefits.length && (
+              <span className="text-sm font-normal text-muted ml-2">
+                / 전체 {totalCount}건
+              </span>
+            )}
+          </h1>
+          <p className="text-xs text-muted">기업마당 실시간 데이터</p>
+        </div>
+      )}
 
       {/* Benefit Cards */}
-      <div className="space-y-4">
-        {(showAllBenefits ? benefits : benefits.slice(0, 3)).map((benefit) => {
-          const isExpanded = expandedId === benefit.id;
-          return (
-            <div
-              key={benefit.id}
-              className="rounded-2xl border border-border bg-card transition-all hover:border-brand-orange/30"
-            >
-              <button
-                type="button"
-                onClick={() =>
-                  setExpandedId(isExpanded ? null : benefit.id)
-                }
-                className="w-full p-6 text-left"
+      {showBenefits && benefits.length > 0 && (
+        <div className="space-y-4">
+          {displayBenefits.map((benefit) => {
+            const isExpanded = expandedId === benefit.id;
+            return (
+              <div
+                key={benefit.id}
+                className="rounded-2xl border border-border bg-card transition-all hover:border-brand-orange/30"
               >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="space-y-2 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span
-                        className={`inline-block rounded-lg px-2.5 py-1 text-xs font-semibold ${getCategoryColor(benefit.category)}`}
-                      >
-                        {benefit.category}
-                      </span>
-                      {benefit.dDay !== null && benefit.dDay <= 60 && (
-                        <span className="rounded-lg bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 dark:bg-red-950 dark:text-red-400">
-                          D-{benefit.dDay}
-                        </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setExpandedId(isExpanded ? null : benefit.id)
+                  }
+                  className="w-full p-6 text-left"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {benefit.category && (
+                          <span
+                            className={`inline-block rounded-lg px-2.5 py-1 text-xs font-semibold ${getCategoryColor(benefit.category)}`}
+                          >
+                            {benefit.category}
+                          </span>
+                        )}
+                        {benefit.dDay !== null &&
+                          benefit.dDay >= 0 &&
+                          benefit.dDay <= 30 && (
+                            <span className="rounded-lg bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 dark:bg-red-950 dark:text-red-400">
+                              D-{benefit.dDay}
+                            </span>
+                          )}
+                      </div>
+                      <h2 className="text-base font-bold sm:text-lg">
+                        {benefit.title}
+                      </h2>
+                      {benefit.target && (
+                        <p className="text-sm text-muted">{benefit.target}</p>
                       )}
                     </div>
-                    <h2 className="text-base font-bold sm:text-lg">
-                      {benefit.title}
-                    </h2>
-                    <p className="text-sm text-muted">{benefit.eligibility}</p>
+                    <div className="flex flex-col items-start sm:items-end sm:text-right shrink-0">
+                      <p className="text-sm font-medium text-brand-orange">
+                        {benefit.organization}
+                      </p>
+                      {benefit.deadline && (
+                        <p className="text-xs text-muted mt-1">
+                          마감 {benefit.deadline}
+                        </p>
+                      )}
+                      {benefit.startDate && !benefit.deadline && (
+                        <p className="text-xs text-muted mt-1">
+                          시작 {benefit.startDate}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex flex-col items-start sm:items-end sm:text-right shrink-0">
-                    <p className="text-base font-bold text-brand-orange">
-                      {benefit.amount}
-                    </p>
-                    <p className="text-xs text-muted mt-1">
-                      마감 {benefit.deadline}
-                    </p>
-                  </div>
-                </div>
-              </button>
+                </button>
 
-              {isExpanded && (
-                <div className="border-t border-border px-6 pb-6 pt-4 space-y-4">
-                  <p className="text-sm leading-relaxed text-muted">
-                    {benefit.description}
-                  </p>
-                  <a
-                    href={`https://www.bizinfo.go.kr/web/lay1/bbs/S1T122C128/AS/74/list.do?searchKeyword=${encodeURIComponent(benefit.title)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block rounded-xl bg-brand-blue px-5 py-2.5 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
-                  >
-                    신청 방법 보기
-                  </a>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                {isExpanded && (
+                  <div className="border-t border-border px-6 pb-6 pt-4 space-y-4">
+                    {benefit.summary && (
+                      <p className="text-sm leading-relaxed text-muted">
+                        {benefit.summary}
+                      </p>
+                    )}
+                    {benefit.startDate && benefit.deadline && (
+                      <p className="text-xs text-muted">
+                        신청기간: {benefit.startDate} ~ {benefit.deadline}
+                      </p>
+                    )}
+                    {benefit.detailUrl && (
+                      <a
+                        href={benefit.detailUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block rounded-xl bg-brand-blue px-5 py-2.5 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
+                      >
+                        상세보기 및 신청
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* 더보기 버튼 */}
-      {benefits.length > 3 && !showAllBenefits && (
+      {showBenefits && benefits.length > 5 && !showAllBenefits && (
         <button
           type="button"
           onClick={() => setShowAllBenefits(true)}
           className="mt-4 w-full rounded-2xl border-2 border-brand-orange/40 bg-brand-orange/5 py-5 text-base font-semibold text-brand-orange transition-all hover:bg-brand-orange/10 hover:border-brand-orange active:scale-[0.99] dark:bg-brand-orange/10 dark:hover:bg-brand-orange/20"
         >
-          혜택 {benefits.length - 3}건 더보기
-        </button>
-      )}
-      {showAllBenefits && benefits.length > 3 && (
-        <button
-          type="button"
-          onClick={() => setShowAllBenefits(false)}
-          className="mt-4 w-full rounded-2xl border border-border bg-card py-4 text-sm font-medium text-muted transition-all hover:border-brand-orange/30 hover:text-foreground"
-        >
-          접기
+          {benefits.length - 5}건 더보기
         </button>
       )}
 
+      {/* 추가 로드 */}
+      {showBenefits && showAllBenefits && hasMore && (
+        <button
+          type="button"
+          onClick={loadMore}
+          disabled={benefitsLoading}
+          className="mt-4 w-full rounded-2xl border border-border bg-card py-4 text-sm font-medium text-muted transition-all hover:border-brand-orange/30 hover:text-foreground disabled:opacity-50"
+        >
+          {benefitsLoading ? "불러오는 중..." : "더 많은 지원사업 불러오기"}
+        </button>
+      )}
+
+      {/* 보조금24 섹션 */}
+      {showBenefits && subsidiesLoading && (
+        <div className="mt-10 flex items-center gap-2 text-sm text-muted">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-orange border-t-transparent" />
+          정부 보조금/혜택 조회 중...
+        </div>
+      )}
+      {showBenefits && subsidies.length > 0 && (
+        <>
+          <div className="mt-10 mb-6 flex items-baseline justify-between">
+            <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
+              정부 보조금/혜택{" "}
+              <span className="text-brand-orange">{subsidies.length}건</span>
+            </h2>
+            <p className="text-xs text-muted">보조금24 데이터</p>
+          </div>
+          <div className="space-y-4">
+            {subsidies.slice(0, showAllBenefits ? undefined : 5).map((b) => (
+              <div key={b.id} className="rounded-2xl border border-border bg-card transition-all hover:border-brand-orange/30">
+                <button type="button" onClick={() => setExpandedId(expandedId === b.id ? null : b.id)} className="w-full p-6 text-left">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="space-y-2 flex-1">
+                      {b.category && (
+                        <span className="inline-block rounded-lg bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700 dark:bg-green-950 dark:text-green-300">{b.category}</span>
+                      )}
+                      <h3 className="text-base font-bold sm:text-lg">{b.title}</h3>
+                      {b.target && <p className="text-sm text-muted">{b.target}</p>}
+                    </div>
+                    <div className="flex flex-col items-start sm:items-end sm:text-right shrink-0">
+                      <p className="text-sm font-medium text-brand-orange">{b.organization}</p>
+                    </div>
+                  </div>
+                </button>
+                {expandedId === b.id && (
+                  <div className="border-t border-border px-6 pb-6 pt-4 space-y-4">
+                    {b.summary && <p className="text-sm leading-relaxed text-muted">{b.summary}</p>}
+                    {b.detailUrl && (
+                      <a href={b.detailUrl} target="_blank" rel="noopener noreferrer" className="inline-block rounded-xl bg-brand-blue px-5 py-2.5 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]">상세보기 및 신청</a>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* 중소벤처24 섹션 */}
+      {showBenefits && smesLoading && (
+        <div className="mt-10 flex items-center gap-2 text-sm text-muted">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-orange border-t-transparent" />
+          중소기업 공고 조회 중...
+        </div>
+      )}
+      {showBenefits && smesNotices.length > 0 && (
+        <>
+          <div className="mt-10 mb-6 flex items-baseline justify-between">
+            <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
+              중소기업 지원 공고{" "}
+              <span className="text-brand-orange">{smesNotices.length}건</span>
+            </h2>
+            <p className="text-xs text-muted">중소벤처24 데이터</p>
+          </div>
+          <div className="space-y-4">
+            {smesNotices.slice(0, showAllBenefits ? undefined : 5).map((b) => (
+              <div key={b.id} className="rounded-2xl border border-border bg-card transition-all hover:border-brand-orange/30">
+                <button type="button" onClick={() => setExpandedId(expandedId === b.id ? null : b.id)} className="w-full p-6 text-left">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {b.category && (
+                          <span className={`inline-block rounded-lg px-2.5 py-1 text-xs font-semibold ${getCategoryColor(b.category)}`}>{b.category}</span>
+                        )}
+                        {b.dDay !== null && b.dDay >= 0 && b.dDay <= 30 && (
+                          <span className="rounded-lg bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 dark:bg-red-950 dark:text-red-400">D-{b.dDay}</span>
+                        )}
+                      </div>
+                      <h3 className="text-base font-bold sm:text-lg">{b.title}</h3>
+                      {b.target && <p className="text-sm text-muted">{b.target}</p>}
+                    </div>
+                    <div className="flex flex-col items-start sm:items-end sm:text-right shrink-0">
+                      <p className="text-sm font-medium text-brand-orange">{b.organization}</p>
+                      {b.deadline && <p className="text-xs text-muted mt-1">마감 {b.deadline}</p>}
+                    </div>
+                  </div>
+                </button>
+                {expandedId === b.id && (
+                  <div className="border-t border-border px-6 pb-6 pt-4 space-y-4">
+                    {b.summary && <p className="text-sm leading-relaxed text-muted">{b.summary}</p>}
+                    {b.detailUrl && (
+                      <a href={b.detailUrl} target="_blank" rel="noopener noreferrer" className="inline-block rounded-xl bg-brand-blue px-5 py-2.5 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]">상세보기 및 신청</a>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* 나라장터 입찰 섹션 */}
+      {showBenefits && procurementsLoading && (
+        <div className="mt-10 flex items-center gap-2 text-sm text-muted">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-orange border-t-transparent" />
+          조달 입찰 공고 조회 중...
+        </div>
+      )}
+      {showBenefits && procurements.length > 0 && (
+        <>
+          <div className="mt-10 mb-6 flex items-baseline justify-between">
+            <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
+              조달 입찰 공고{" "}
+              <span className="text-brand-orange">{procurements.length}건</span>
+            </h2>
+            <p className="text-xs text-muted">나라장터 데이터</p>
+          </div>
+          <div className="space-y-4">
+            {procurements.slice(0, 5).map((b) => (
+              <div key={b.id} className="rounded-2xl border border-border bg-card transition-all hover:border-brand-orange/30">
+                <button type="button" onClick={() => setExpandedId(expandedId === b.id ? null : b.id)} className="w-full p-6 text-left">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="inline-block rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300">입찰</span>
+                        {b.dDay !== null && b.dDay >= 0 && b.dDay <= 7 && (
+                          <span className="rounded-lg bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 dark:bg-red-950 dark:text-red-400">D-{b.dDay}</span>
+                        )}
+                      </div>
+                      <h3 className="text-base font-bold sm:text-lg">{b.title}</h3>
+                    </div>
+                    <div className="flex flex-col items-start sm:items-end sm:text-right shrink-0">
+                      <p className="text-sm font-medium text-brand-orange">{b.organization}</p>
+                      {b.deadline && <p className="text-xs text-muted mt-1">마감 {b.deadline}</p>}
+                    </div>
+                  </div>
+                </button>
+                {expandedId === b.id && (
+                  <div className="border-t border-border px-6 pb-6 pt-4 space-y-4">
+                    {b.summary && <p className="text-sm leading-relaxed text-muted">{b.summary}</p>}
+                    {b.detailUrl && (
+                      <a href={b.detailUrl} target="_blank" rel="noopener noreferrer" className="inline-block rounded-xl bg-brand-blue px-5 py-2.5 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]">상세보기</a>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
       {/* Marketing CTA */}
-      {bizInfo?.businessName && (
+      {showBenefits && bizInfo?.businessName && (
         <div className="mt-12 rounded-2xl border border-brand-orange/30 bg-gradient-to-r from-brand-blue/5 to-brand-orange/5 p-6 sm:p-8 text-center dark:from-brand-blue/10 dark:to-brand-orange/10">
           <p className="text-lg font-bold sm:text-xl">
-            {bizInfo.businessName}에 적합한
+            <span className="text-brand-orange">{bizInfo.businessName}</span>에 적합한
           </p>
           <p className="text-lg font-bold sm:text-xl">
             무료 마케팅 가이드를 확인해보세요
@@ -545,47 +1028,94 @@ function ResultContent() {
       )}
 
       {/* Email Section */}
-      <div className="mt-8 rounded-2xl border border-border bg-surface p-6 sm:p-8">
-        {emailSent ? (
-          <div className="text-center space-y-2">
-            <p className="text-base font-bold">전송 완료</p>
-            <p className="text-sm text-muted">
-              입력하신 이메일로 혜택 리포트를 발송했습니다.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="text-center space-y-1">
-              <p className="text-base font-bold">
-                결과를 이메일로 받아보세요
-              </p>
+      {showBenefits && benefits.length > 0 && (
+        <div className="mt-8 rounded-2xl border border-border bg-surface p-6 sm:p-8">
+          {emailSent ? (
+            <div className="text-center space-y-2">
+              <p className="text-base font-bold">전송 완료</p>
               <p className="text-sm text-muted">
-                혜택 목록과 신청 방법을 정리한 리포트를 보내드립니다.
+                입력하신 이메일로 혜택 리포트를 발송했습니다.
               </p>
             </div>
-            <form
-              onSubmit={handleEmailSubmit}
-              className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
-            >
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="이메일 주소 입력"
-                required
-                className="flex-1 rounded-xl border border-border bg-card px-4 py-3 text-sm transition-all placeholder:text-muted/40 focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
-              />
-              <button
-                type="submit"
-                disabled={emailSending}
-                className="shrink-0 rounded-xl bg-brand-orange px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
+          ) : (
+            <div className="space-y-4">
+              <div className="text-center space-y-1">
+                <p className="text-base font-bold">
+                  결과를 이메일로 받아보세요
+                </p>
+                <p className="text-sm text-muted">
+                  지원사업 목록과 신청 링크를 정리한 리포트를 보내드립니다.
+                </p>
+              </div>
+              <form
+                onSubmit={handleEmailSubmit}
+                className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
               >
-                {emailSending ? "전송 중..." : "전송하기"}
-              </button>
-            </form>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="이메일 주소 입력"
+                  required
+                  className="flex-1 rounded-xl border border-border bg-card px-4 py-3 text-sm transition-all placeholder:text-muted/40 focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
+                />
+                <button
+                  type="submit"
+                  disabled={emailSending}
+                  className="shrink-0 rounded-xl bg-brand-orange px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
+                >
+                  {emailSending ? "전송 중..." : "전송하기"}
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 데이터 출처 */}
+      {showBenefits && (benefits.length > 0 || subsidies.length > 0 || smesNotices.length > 0 || procurements.length > 0) && (
+        <p className="mt-4 text-center text-xs text-muted">
+          데이터 출처: 기업마당 · 보조금24 · 중소벤처24 · 나라장터
+        </p>
+      )}
+
+      {/* Ad Unit */}
+      {showBenefits && (benefits.length > 0 || subsidies.length > 0) && (
+        <AdUnit slot="9618849619" className="mt-8" />
+      )}
+
+      {/* Cross Promotion */}
+      {showBenefits && (benefits.length > 0 || subsidies.length > 0) && (
+        <div className="mt-12 print:hidden">
+          <p className="mb-4 text-center text-sm font-medium text-muted">
+            이런 도구도 있어요
+          </p>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <a
+              href="https://vibescan.woomoolga.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-2xl border border-border bg-card p-5 transition-all hover:border-brand-orange/30 hover:bg-card-hover"
+            >
+              <p className="text-sm font-bold">VibeScan</p>
+              <p className="mt-1 text-xs text-muted">
+                홈페이지 보안 무료 검사
+              </p>
+            </a>
+            <a
+              href="https://whateat.woomoolga.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-2xl border border-border bg-card p-5 transition-all hover:border-brand-orange/30 hover:bg-card-hover"
+            >
+              <p className="text-sm font-bold">오늘 뭐 먹지?</p>
+              <p className="mt-1 text-xs text-muted">
+                오늘 점심 뭐 먹을지 추천
+              </p>
+            </a>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
